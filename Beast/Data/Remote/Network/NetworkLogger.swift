@@ -5,7 +5,7 @@ enum NetworkLogger {
         #if DEBUG
         print("")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("➡️ REQUEST")
+        print("➡️ REQUEST [HTTP]")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         if let method = request.httpMethod {
@@ -28,7 +28,6 @@ enum NetworkLogger {
         if let body = request.httpBody {
             print("")
             print("Body:")
-
             printFormattedJSON(data: body)
         }
 
@@ -46,7 +45,7 @@ enum NetworkLogger {
         #if DEBUG
         print("")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("⬅️ RESPONSE")
+        print("⬅️ RESPONSE [HTTP]")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         if let method = request.httpMethod {
@@ -86,7 +85,7 @@ enum NetworkLogger {
         #if DEBUG
         print("")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("❌ NETWORK ERROR")
+        print("❌ ERROR [HTTP]")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
         if let method = request.httpMethod {
@@ -105,7 +104,87 @@ enum NetworkLogger {
         #endif
     }
 
-    private static func printFormattedJSON(data: Data) {
+    static func logFirebaseRequest(
+        path: String,
+        operation: String = "LISTEN"
+    ) {
+        #if DEBUG
+        print("")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("➡️ REQUEST [FIRESTORE]")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("Operation: \(operation)")
+        print("Path: \(path)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("")
+        #endif
+    }
+
+    static func logFirebaseResponse(
+        path: String,
+        documents: [[String: Any]]
+    ) {
+        #if DEBUG
+        print("")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("⬅️ RESPONSE [FIRESTORE]")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("Path: \(path)")
+        print("Documents: \(documents.count)")
+        print("")
+        print("Payload:")
+
+        printFormattedJSONObject(documents)
+
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("")
+        #endif
+    }
+
+    static func logFirebaseResponse(
+        path: String,
+        document: [String: Any]?
+    ) {
+        #if DEBUG
+        print("")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("⬅️ RESPONSE [FIRESTORE]")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("Path: \(path)")
+        print("")
+        print("Payload:")
+
+        if let document {
+            printFormattedJSONObject(document)
+        } else {
+            print("<EMPTY>")
+        }
+
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("")
+        #endif
+    }
+
+    static func logFirebaseError(
+        path: String,
+        error: Error
+    ) {
+        #if DEBUG
+        print("")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("❌ ERROR [FIRESTORE]")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("Path: \(path)")
+        print("Error: \(error.localizedDescription)")
+        print("Raw error: \(error)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("")
+        #endif
+    }
+
+    private static func printFormattedJSON(
+        data: Data
+    ) {
         guard
             let object = try? JSONSerialization.jsonObject(with: data),
             let formattedData = try? JSONSerialization.data(
@@ -123,6 +202,27 @@ enum NetworkLogger {
                     encoding: .utf8
                 ) ?? "<UNREADABLE BODY>"
             )
+            return
+        }
+
+        print(text)
+    }
+
+    private static func printFormattedJSONObject(
+        _ object: Any
+    ) {
+        guard
+            JSONSerialization.isValidJSONObject(object),
+            let data = try? JSONSerialization.data(
+                withJSONObject: object,
+                options: [.prettyPrinted, .sortedKeys]
+            ),
+            let text = String(
+                data: data,
+                encoding: .utf8
+            )
+        else {
+            print(String(describing: object))
             return
         }
 
