@@ -10,29 +10,37 @@ struct MainTabView: View {
                 .ignoresSafeArea(.all)
 
             TabView(selection: $selectedTab) {
-                HomeView()
-                    .tabItem {
-                        Image(systemName: MainTab.home.icon)
-                    }
-                    .tag(MainTab.home)
+                NavigationStack {
+                    HomeView()
+                }
+                .tabItem {
+                    Image(systemName: MainTab.home.icon)
+                }
+                .tag(MainTab.home)
 
-                ScheduleView()
-                    .tabItem {
-                        Image(systemName: MainTab.schedule.icon)
-                    }
-                    .tag(MainTab.schedule)
+                NavigationStack {
+                    ScheduleView()
+                }
+                .tabItem {
+                    Image(systemName: MainTab.schedule.icon)
+                }
+                .tag(MainTab.schedule)
 
-                PackagesView()
-                    .tabItem {
-                        Image(systemName: MainTab.packages.icon)
-                    }
-                    .tag(MainTab.packages)
+                NavigationStack {
+                    PackagesView()
+                }
+                .tabItem {
+                    Image(systemName: MainTab.packages.icon)
+                }
+                .tag(MainTab.packages)
 
-                ProfileView()
-                    .tabItem {
-                        Image(systemName: MainTab.profile.icon)
-                    }
-                    .tag(MainTab.profile)
+                NavigationStack {
+                    ProfileView()
+                }
+                .tabItem {
+                    Image(systemName: MainTab.profile.icon)
+                }
+                .tag(MainTab.profile)
             }
             .tint(Color("BeastTabSelected"))
         }

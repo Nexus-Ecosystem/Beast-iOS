@@ -68,24 +68,14 @@ struct HomeView: View {
     }
 
     private var qrScannerButton: some View {
-        Button {
-            // TODO: abrir QR Scanner
+        NavigationLink {
+            QrCheckInView()
         } label: {
             Image(systemName: "qrcode.viewfinder")
-                .font(
-                    .system(
-                        size: 26,
-                        weight: .semibold
-                    )
-                )
+                .font(.system(size: 26, weight: .semibold))
                 .foregroundStyle(.white)
-                .frame(
-                    width: 58,
-                    height: 58
-                )
-                .background(
-                    BeastColors.primary
-                )
+                .frame(width: 58, height: 58)
+                .background(BeastColors.primary)
                 .clipShape(
                     RoundedRectangle(
                         cornerRadius: 14,
@@ -93,7 +83,7 @@ struct HomeView: View {
                     )
                 )
                 .shadow(
-                    color: Color.black.opacity(0.20),
+                    color: .black.opacity(0.20),
                     radius: 8,
                     x: 0,
                     y: 5
@@ -104,5 +94,7 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    NavigationStack {
+        HomeView()
+    }
 }
