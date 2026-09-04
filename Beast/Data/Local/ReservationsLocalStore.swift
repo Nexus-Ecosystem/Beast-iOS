@@ -2,11 +2,32 @@ import Foundation
 
 protocol ReservationsLocalStoreProtocol {
     func saveReservations(_ reservations: [ClassItemEntity]) async
+
+    func replaceReservations(
+        _ reservations: [ClassItemEntity],
+        forMonth month: String
+    ) async
+
     func saveReservation(_ reservation: ClassItemEntity) async
-    func reservation(time: String, day: String) async -> ClassItemEntity?
-    func reservations(for day: String) async -> [ClassItemEntity]
-    func history(before day: String) async -> [ClassItemEntity]
-    func deleteReservation(time: String, day: String) async
+
+    func reservation(
+        time: String,
+        day: String
+    ) async -> ClassItemEntity?
+
+    func reservations(
+        for day: String
+    ) async -> [ClassItemEntity]
+
+    func history(
+        before day: String
+    ) async -> [ClassItemEntity]
+
+    func deleteReservation(
+        time: String,
+        day: String
+    ) async
+
     func clear() async
 }
 
@@ -31,7 +52,9 @@ actor ReservationsLocalStore: ReservationsLocalStoreProtocol {
         self.decoder = decoder
     }
 
-    func saveReservations(_ reservations: [ClassItemEntity]) async {
+    func saveReservations(
+        _ reservations: [ClassItemEntity]
+    ) async {
         var current = loadReservations()
 
         for reservation in reservations {
@@ -40,13 +63,34 @@ actor ReservationsLocalStore: ReservationsLocalStoreProtocol {
                 $0.time == reservation.time
             }
 
-            current.append(reservation)
+            current.append(
+                reservation
+            )
         }
 
         save(current)
     }
 
-    func saveReservation(_ reservation: ClassItemEntity) async {
+    func replaceReservations(
+        _ reservations: [ClassItemEntity],
+        forMonth month: String
+    ) async {
+        var current = loadReservations()
+
+        current.removeAll {
+            $0.diaAgendado.hasPrefix(month)
+        }
+
+        current.append(
+            contentsOf: reservations
+        )
+
+        save(current)
+    }
+
+    func saveReservation(
+        _ reservation: ClassItemEntity
+    ) async {
         var current = loadReservations()
 
         current.removeAll {
@@ -54,7 +98,9 @@ actor ReservationsLocalStore: ReservationsLocalStoreProtocol {
             $0.time == reservation.time
         }
 
-        current.append(reservation)
+        current.append(
+            reservation
+        )
 
         save(current)
     }
@@ -63,13 +109,16 @@ actor ReservationsLocalStore: ReservationsLocalStoreProtocol {
         time: String,
         day: String
     ) async -> ClassItemEntity? {
-        loadReservations().first {
-            $0.time == time &&
-            $0.diaAgendado == day
-        }
+        loadReservations()
+            .first {
+                $0.time == time &&
+                $0.diaAgendado == day
+            }
     }
 
-    func reservations(for day: String) async -> [ClassItemEntity] {
+    func reservations(
+        for day: String
+    ) async -> [ClassItemEntity] {
         loadReservations()
             .filter {
                 $0.diaAgendado == day
@@ -79,7 +128,9 @@ actor ReservationsLocalStore: ReservationsLocalStoreProtocol {
             }
     }
 
-    func history(before day: String) async -> [ClassItemEntity] {
+    func history(
+        before day: String
+    ) async -> [ClassItemEntity] {
         loadReservations()
             .filter {
                 $0.diaAgendado < day
@@ -129,8 +180,12 @@ actor ReservationsLocalStore: ReservationsLocalStoreProtocol {
         return reservations
     }
 
-    private func save(_ reservations: [ClassItemEntity]) {
-        guard let data = try? encoder.encode(reservations) else {
+    private func save(
+        _ reservations: [ClassItemEntity]
+    ) {
+        guard let data = try? encoder.encode(
+            reservations
+        ) else {
             return
         }
 

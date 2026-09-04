@@ -13,6 +13,7 @@ struct ClassItemEntity: Codable, Identifiable, Equatable {
     let agenda: Int
     let total: Int
     let photo: String
+    let cancelled: Bool
     var isScheduled: Bool
 
     init(
@@ -28,6 +29,7 @@ struct ClassItemEntity: Codable, Identifiable, Equatable {
         agenda: Int = 0,
         total: Int = 0,
         photo: String = "",
+        cancelled: Bool = false,
         isScheduled: Bool = false
     ) {
         self.id = id
@@ -42,6 +44,7 @@ struct ClassItemEntity: Codable, Identifiable, Equatable {
         self.agenda = agenda
         self.total = total
         self.photo = photo
+        self.cancelled = cancelled
         self.isScheduled = isScheduled
     }
 }

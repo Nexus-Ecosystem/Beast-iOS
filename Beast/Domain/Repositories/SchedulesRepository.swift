@@ -1,6 +1,16 @@
 import Foundation
 
 protocol SchedulesRepository {
+    func observeSchedules(
+        branch: String,
+        day: String,
+        month: String,
+        onChange: @escaping ([ClassItem]) -> Void,
+        onError: @escaping (Error) -> Void
+    )
+
+    func stopSchedulesObserver()
+
     func observePendingSchedules(
         branch: String,
         month: String,
@@ -11,9 +21,9 @@ protocol SchedulesRepository {
 
     func stopPendingSchedulesObserver()
 
-    func upcomingReservation(
+    func upcomingReservations(
         day: String
-    ) async -> ClassItemEntity?
+    ) async -> [ClassItemEntity]
 
     func reservationHistory(
         day: String

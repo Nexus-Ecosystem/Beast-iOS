@@ -3,7 +3,7 @@ import Combine
 
 @MainActor
 final class HomeViewModel: ObservableObject {
-    @Published private(set) var upcomingClass: ClassItemEntity?
+    @Published private(set) var upcomingClasses: [ClassItemEntity] = []
     @Published private(set) var classHistory: [ClassItemEntity] = []
     @Published private(set) var profile: AllDataProfileUserSystem?
     @Published private(set) var isLoading = false
@@ -12,12 +12,16 @@ final class HomeViewModel: ObservableObject {
     private let schedulesUseCase: SchedulesUseCase
     private let storage: AppStorageManager
 
+    private var cancellables = Set<AnyCancellable>()
+
     init(
         schedulesUseCase: SchedulesUseCase = SchedulesUseCase(),
         storage: AppStorageManager = .shared
     ) {
         self.schedulesUseCase = schedulesUseCase
         self.storage = storage
+
+        observeReservationChanges()
     }
 
     func load() async {
@@ -57,32 +61,34 @@ final class HomeViewModel: ObservableObject {
         schedulesUseCase.observePendingSchedules(
             branch: branch,
             month: month,
-            email: profile.email
-        ) { [weak self] in
-            guard let self else { return }
+            email: profile.email,
+            onChange: { [weak self] in
+                guard let self else { return }
 
-            Task {
-                await self.refreshLocalData(
-                    day: day
-                )
+                Task { @MainActor in
+                    await self.refreshLocalData(
+                        day: Self.dayFormatter.string(
+                            from: Date()
+                        )
+                    )
+                }
+            },
+            onError: { [weak self] error in
+                Task { @MainActor in
+                    self?.errorMessage =
+                        error.localizedDescription
+                }
             }
-
-        } onError: { [weak self] error in
-            Task { @MainActor in
-                self?.errorMessage = error.localizedDescription
-            }
-        }
+        )
 
         isLoading = false
     }
 
     func refresh() async {
-        let day = Self.dayFormatter.string(
-            from: Date()
-        )
-
         await refreshLocalData(
-            day: day
+            day: Self.dayFormatter.string(
+                from: Date()
+            )
         )
     }
 
@@ -94,11 +100,35 @@ final class HomeViewModel: ObservableObject {
         errorMessage = nil
     }
 
+    private func observeReservationChanges() {
+        NotificationCenter.default
+            .publisher(
+                for: .reservationsDidChange
+            )
+            .receive(
+                on: DispatchQueue.main
+            )
+            .sink { [weak self] _ in
+                guard let self else { return }
+
+                Task { @MainActor in
+                    await self.refreshLocalData(
+                        day: Self.dayFormatter.string(
+                            from: Date()
+                        )
+                    )
+                }
+            }
+            .store(
+                in: &cancellables
+            )
+    }
+
     private func refreshLocalData(
         day: String
     ) async {
-        upcomingClass = await schedulesUseCase
-            .upcomingReservation(
+        upcomingClasses = await schedulesUseCase
+            .upcomingReservations(
                 day: day
             )
 

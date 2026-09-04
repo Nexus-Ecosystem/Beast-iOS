@@ -9,6 +9,26 @@ final class SchedulesUseCase {
         self.repository = repository
     }
 
+    func observeSchedules(
+        branch: String,
+        day: String,
+        month: String,
+        onChange: @escaping ([ClassItem]) -> Void,
+        onError: @escaping (Error) -> Void
+    ) {
+        repository.observeSchedules(
+            branch: branch,
+            day: day,
+            month: month,
+            onChange: onChange,
+            onError: onError
+        )
+    }
+
+    func stopSchedulesObserver() {
+        repository.stopSchedulesObserver()
+    }
+
     func observePendingSchedules(
         branch: String,
         month: String,
@@ -29,10 +49,10 @@ final class SchedulesUseCase {
         repository.stopPendingSchedulesObserver()
     }
 
-    func upcomingReservation(
+    func upcomingReservations(
         day: String
-    ) async -> ClassItemEntity? {
-        await repository.upcomingReservation(
+    ) async -> [ClassItemEntity] {
+        await repository.upcomingReservations(
             day: day
         )
     }
