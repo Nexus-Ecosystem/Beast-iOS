@@ -2,10 +2,15 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab: MainTab = .home
-    @Environment(\.colorScheme) private var colorScheme
+
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     @StateObject private var scheduleViewModel =
         ScheduleViewModel()
+
+    @StateObject private var profileViewModel =
+        ProfileViewModel()
 
     @State private var bikeSelectionContext: BikeSelectionContext?
     @State private var showBikeSelection = false
@@ -13,7 +18,7 @@ struct MainTabView: View {
     var body: some View {
         ZStack {
             Color("BeastBackground")
-                .ignoresSafeArea(.all)
+                .ignoresSafeArea()
 
             TabView(
                 selection: $selectedTab
@@ -68,7 +73,9 @@ struct MainTabView: View {
                 .tag(MainTab.packages)
 
                 NavigationStack {
-                    ProfileView()
+                    ProfileView(
+                        viewModel: profileViewModel
+                    )
                 }
                 .tabItem {
                     Image(
@@ -81,7 +88,7 @@ struct MainTabView: View {
                 Color("BeastTabSelected")
             )
 
-            scheduleDialogs
+            globalOverlays
         }
         .ignoresSafeArea(.keyboard)
         .onAppear {
@@ -94,23 +101,49 @@ struct MainTabView: View {
         }
     }
 
-    private func openBikeSelection(
-        item: ClassItem,
-        day: String,
-        month: String
-    ) {
-        bikeSelectionContext =
-            BikeSelectionContext(
-                classItem: item,
-                day: day,
-                month: month
-            )
+    @ViewBuilder
+    private var globalOverlays: some View {
+        scheduleOverlays
 
-        showBikeSelection = true
+        profileOverlays
     }
 
     @ViewBuilder
-    private var scheduleDialogs: some View {
+    private var profileOverlays: some View {
+        if profileViewModel.isLoading {
+            BeastLoadingOverlay(
+                message: "Actualizando perfil..."
+            )
+            .zIndex(1000)
+        }
+
+        if profileViewModel.showLogoutConfirmation {
+            BeastLogoutDialog(
+                onConfirm: {
+                    profileViewModel.confirmLogout()
+                },
+                onCancel: {
+                    profileViewModel.cancelLogout()
+                }
+            )
+            .zIndex(2000)
+        }
+
+        if let error = profileViewModel.errorMessage {
+            BeastAlertDialog(
+                style: .error,
+                title: "¡Atención!",
+                message: error,
+                buttonTitle: "Entendido"
+            ) {
+                profileViewModel.resetError()
+            }
+            .zIndex(3000)
+        }
+    }
+
+    @ViewBuilder
+    private var scheduleOverlays: some View {
         if
             scheduleViewModel.showBookingConfirmation,
             let item = scheduleViewModel.selectedClass
@@ -129,7 +162,7 @@ struct MainTabView: View {
                     scheduleViewModel.closeConfirmation()
                 }
             )
-            .zIndex(100)
+            .zIndex(1000)
         }
 
         if
@@ -150,7 +183,7 @@ struct MainTabView: View {
                     scheduleViewModel.closeConfirmation()
                 }
             )
-            .zIndex(100)
+            .zIndex(1000)
         }
 
         if
@@ -172,41 +205,54 @@ struct MainTabView: View {
                     scheduleViewModel.closeConfirmation()
                 }
             )
-            .zIndex(100)
+            .zIndex(1000)
         }
 
         if scheduleViewModel.isBookingLoading {
             BeastLoadingOverlay(
                 message: "Procesando reserva..."
             )
-            .zIndex(200)
+            .zIndex(2000)
         }
 
         if scheduleViewModel.showBookingSuccess {
             BeastAlertDialog(
                 style: .success,
                 title: "¡Felicidades!",
-                message:
-                    scheduleViewModel.bookingMessage,
+                message: scheduleViewModel.bookingMessage,
                 buttonTitle: "Entendido"
             ) {
                 scheduleViewModel.closeSuccess()
             }
-            .zIndex(300)
+            .zIndex(3000)
         }
 
         if scheduleViewModel.showBookingError {
             BeastAlertDialog(
                 style: .error,
                 title: "¡Atención!",
-                message:
-                    scheduleViewModel.bookingMessage,
+                message: scheduleViewModel.bookingMessage,
                 buttonTitle: "Entendido"
             ) {
                 scheduleViewModel.closeError()
             }
-            .zIndex(300)
+            .zIndex(3000)
         }
+    }
+
+    private func openBikeSelection(
+        item: ClassItem,
+        day: String,
+        month: String
+    ) {
+        bikeSelectionContext =
+            BikeSelectionContext(
+                classItem: item,
+                day: day,
+                month: month
+            )
+
+        showBikeSelection = true
     }
 
     private func configureTabBar() {
@@ -225,15 +271,11 @@ struct MainTabView: View {
             UIColor(
                 Color("BeastTabBackground")
             )
-            .withAlphaComponent(
-                0.94
-            )
+            .withAlphaComponent(0.94)
 
         appearance.shadowColor =
             UIColor.black
-                .withAlphaComponent(
-                    0.05
-                )
+                .withAlphaComponent(0.05)
 
         let itemAppearance =
             UITabBarItemAppearance()

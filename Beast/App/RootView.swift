@@ -4,6 +4,9 @@ struct RootView: View {
     @State private var hasCompletedOnboarding: Bool
     @State private var isLoggedIn: Bool
 
+    @AppStorage("dark_mode")
+    private var darkMode = false
+
     private let onboardingPreferences: OnboardingPreferencesProtocol
     private let storage: AppStorageManager
 
@@ -15,11 +18,14 @@ struct RootView: View {
         self.storage = storage
 
         _hasCompletedOnboarding = State(
-            initialValue: onboardingPreferences.hasCompletedOnboarding
+            initialValue:
+                onboardingPreferences
+                    .hasCompletedOnboarding
         )
 
         _isLoggedIn = State(
-            initialValue: storage.isLoggedIn
+            initialValue:
+                storage.isLoggedIn
         )
     }
 
@@ -29,36 +35,57 @@ struct RootView: View {
                 OnboardingView {
                     completeOnboarding()
                 }
-                .transition(.opacity)
+                .transition(
+                    .opacity
+                )
 
             } else if !isLoggedIn {
                 LoginView()
-                    .transition(.opacity)
+                    .transition(
+                        .opacity
+                    )
 
             } else {
                 MainTabView()
-                    .transition(.opacity)
+                    .transition(
+                        .opacity
+                    )
             }
         }
-        .animation(
-            .easeInOut(duration: 0.3),
-            value: hasCompletedOnboarding
+        .preferredColorScheme(
+            darkMode
+            ? .dark
+            : .light
         )
         .animation(
-            .easeInOut(duration: 0.3),
-            value: isLoggedIn
+            .easeInOut(
+                duration: 0.3
+            ),
+            value:
+                hasCompletedOnboarding
+        )
+        .animation(
+            .easeInOut(
+                duration: 0.3
+            ),
+            value:
+                isLoggedIn
         )
         .onReceive(
-            NotificationCenter.default.publisher(
-                for: .sessionDidChange
-            )
+            NotificationCenter.default
+                .publisher(
+                    for:
+                        .sessionDidChange
+                )
         ) { _ in
-            isLoggedIn = storage.isLoggedIn
+            isLoggedIn =
+                storage.isLoggedIn
         }
     }
 
     private func completeOnboarding() {
-        onboardingPreferences.completeOnboarding()
+        onboardingPreferences
+            .completeOnboarding()
 
         withAnimation {
             hasCompletedOnboarding = true
