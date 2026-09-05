@@ -6,6 +6,7 @@ struct ClassItem: Identifiable, Equatable {
     let coach: String
     let photo: String
     let time: String
+    let duration: Int
     let level: Int
     let agenda: Int
     let total: Int
@@ -18,6 +19,7 @@ struct ClassItem: Identifiable, Equatable {
         coach: String = "",
         photo: String = "",
         time: String = "",
+        duration: Int = 0,
         level: Int = 1,
         agenda: Int = 0,
         total: Int = 0,
@@ -29,6 +31,7 @@ struct ClassItem: Identifiable, Equatable {
         self.coach = coach
         self.photo = photo
         self.time = time
+        self.duration = duration
         self.level = level
         self.agenda = agenda
         self.total = total
@@ -41,17 +44,32 @@ struct ClassItem: Identifiable, Equatable {
     }
 
     var capacityProgress: Double {
-        guard total > 0 else { return 0 }
-        return min(Double(agenda) / Double(total), 1)
+        guard total > 0 else {
+            return 0
+        }
+
+        return min(
+            Double(agenda) / Double(total),
+            1
+        )
     }
 
     var difficultyName: String {
         switch level {
-        case 1: return "Fácil"
-        case 2: return "Media"
-        case 3: return "Retadora"
-        case 4: return "Difícil"
-        default: return "Fácil"
+        case 1:
+            return "Fácil"
+
+        case 2:
+            return "Media"
+
+        case 3:
+            return "Retadora"
+
+        case 4:
+            return "Difícil"
+
+        default:
+            return "Fácil"
         }
     }
 }

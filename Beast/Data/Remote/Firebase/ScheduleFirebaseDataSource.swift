@@ -159,6 +159,9 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
             coach: data["coach"] as? String ?? "",
             photo: data["photo"] as? String ?? "",
             time: data["time"] as? String ?? document.documentID,
+            duration: intValue(
+                data["duration"]
+            ),
             level: intValue(
                 data["level"]
             ),

@@ -7,6 +7,9 @@ struct MainTabView: View {
     @StateObject private var scheduleViewModel =
         ScheduleViewModel()
 
+    @State private var bikeSelectionContext: BikeSelectionContext?
+    @State private var showBikeSelection = false
+
     var body: some View {
         ZStack {
             Color("BeastBackground")
@@ -20,88 +23,67 @@ struct MainTabView: View {
                 }
                 .tabItem {
                     Image(
-                        systemName:
-                            MainTab.home.icon
+                        systemName: MainTab.home.icon
                     )
                 }
-                .tag(
-                    MainTab.home
-                )
+                .tag(MainTab.home)
 
                 NavigationStack {
                     ScheduleView(
-                        viewModel:
-                            scheduleViewModel,
-                        onSelectBike: {
-                            item,
-                            day,
-                            month in
-
-                            print(
-                                "Seleccionar bici"
-                            )
-
-                            print(
-                                "Clase: \(item.id)"
-                            )
-
-                            print(
-                                "Día: \(day)"
-                            )
-
-                            print(
-                                "Mes: \(month)"
+                        viewModel: scheduleViewModel,
+                        onSelectBike: { item, day, month in
+                            openBikeSelection(
+                                item: item,
+                                day: day,
+                                month: month
                             )
                         }
                     )
+                    .navigationDestination(
+                        isPresented: $showBikeSelection
+                    ) {
+                        if let context = bikeSelectionContext {
+                            BikeSelectionView(
+                                context: context,
+                                viewModel: BikeSelectionViewModel()
+                            )
+                        }
+                    }
                 }
                 .tabItem {
                     Image(
-                        systemName:
-                            MainTab.schedule.icon
+                        systemName: MainTab.schedule.icon
                     )
                 }
-                .tag(
-                    MainTab.schedule
-                )
+                .tag(MainTab.schedule)
 
                 NavigationStack {
                     PackagesView()
                 }
                 .tabItem {
                     Image(
-                        systemName:
-                            MainTab.packages.icon
+                        systemName: MainTab.packages.icon
                     )
                 }
-                .tag(
-                    MainTab.packages
-                )
+                .tag(MainTab.packages)
 
                 NavigationStack {
                     ProfileView()
                 }
                 .tabItem {
                     Image(
-                        systemName:
-                            MainTab.profile.icon
+                        systemName: MainTab.profile.icon
                     )
                 }
-                .tag(
-                    MainTab.profile
-                )
+                .tag(MainTab.profile)
             }
             .tint(
-                Color(
-                    "BeastTabSelected"
-                )
+                Color("BeastTabSelected")
             )
 
             scheduleDialogs
         }
-        .ignoresSafeArea(
-            .keyboard
-        )
+        .ignoresSafeArea(.keyboard)
         .onAppear {
             configureTabBar()
         }
@@ -112,141 +94,116 @@ struct MainTabView: View {
         }
     }
 
+    private func openBikeSelection(
+        item: ClassItem,
+        day: String,
+        month: String
+    ) {
+        bikeSelectionContext =
+            BikeSelectionContext(
+                classItem: item,
+                day: day,
+                month: month
+            )
+
+        showBikeSelection = true
+    }
+
     @ViewBuilder
     private var scheduleDialogs: some View {
         if
-            scheduleViewModel
-                .showBookingConfirmation,
-            let item =
-                scheduleViewModel
-                .selectedClass
+            scheduleViewModel.showBookingConfirmation,
+            let item = scheduleViewModel.selectedClass
         {
             ScheduleBookingConfirmationDialog(
                 item: item,
-                date:
-                    scheduleViewModel
-                    .selectedDate,
-                title:
-                    "CONFIRMAR RESERVA",
+                date: scheduleViewModel.selectedDate,
+                title: "CONFIRMAR RESERVA",
                 message:
                     "Asegura tu lugar confirmando esta reserva, no te quedes sin tu lugar !.",
-                confirmTitle:
-                    "CONFIRMAR",
+                confirmTitle: "CONFIRMAR",
                 onConfirm: {
-                    scheduleViewModel
-                        .confirmBooking()
+                    scheduleViewModel.confirmBooking()
                 },
                 onClose: {
-                    scheduleViewModel
-                        .closeConfirmation()
+                    scheduleViewModel.closeConfirmation()
                 }
             )
             .zIndex(100)
         }
 
         if
-            scheduleViewModel
-                .showExtraBookingConfirmation,
-            let item =
-                scheduleViewModel
-                .selectedClass
+            scheduleViewModel.showExtraBookingConfirmation,
+            let item = scheduleViewModel.selectedClass
         {
             ScheduleBookingConfirmationDialog(
                 item: item,
-                date:
-                    scheduleViewModel
-                    .selectedDate,
-                title:
-                    "RESERVA EXTRA",
+                date: scheduleViewModel.selectedDate,
+                title: "RESERVA EXTRA",
                 message:
                     "Ya tienes una clase agendada este día. Esta reserva se tomará como una clase extra.",
-                confirmTitle:
-                    "CONFIRMAR",
+                confirmTitle: "CONFIRMAR",
                 onConfirm: {
-                    scheduleViewModel
-                        .confirmExtraBooking()
+                    scheduleViewModel.confirmExtraBooking()
                 },
                 onClose: {
-                    scheduleViewModel
-                        .closeConfirmation()
+                    scheduleViewModel.closeConfirmation()
                 }
             )
             .zIndex(100)
         }
 
         if
-            scheduleViewModel
-                .showCancellationConfirmation,
-            let item =
-                scheduleViewModel
-                .selectedClass
+            scheduleViewModel.showCancellationConfirmation,
+            let item = scheduleViewModel.selectedClass
         {
             ScheduleBookingConfirmationDialog(
                 item: item,
-                date:
-                    scheduleViewModel
-                    .selectedDate,
-                title:
-                    "CANCELAR RESERVA",
+                date: scheduleViewModel.selectedDate,
+                title: "CANCELAR RESERVA",
                 message:
                     "¿Estás seguro de que deseas cancelar tu reserva?",
-                confirmTitle:
-                    "CANCELAR RESERVA",
+                confirmTitle: "CANCELAR RESERVA",
                 destructive: true,
                 onConfirm: {
-                    scheduleViewModel
-                        .confirmCancellation()
+                    scheduleViewModel.confirmCancellation()
                 },
                 onClose: {
-                    scheduleViewModel
-                        .closeConfirmation()
+                    scheduleViewModel.closeConfirmation()
                 }
             )
             .zIndex(100)
         }
 
-        if scheduleViewModel
-            .isBookingLoading
-        {
+        if scheduleViewModel.isBookingLoading {
             BeastLoadingOverlay(
-                message:
-                    "Procesando reserva..."
+                message: "Procesando reserva..."
             )
             .zIndex(200)
         }
 
-        if scheduleViewModel
-            .showBookingSuccess
-        {
+        if scheduleViewModel.showBookingSuccess {
             BeastAlertDialog(
                 style: .success,
                 title: "¡Felicidades!",
                 message:
-                    scheduleViewModel
-                    .bookingMessage,
-                buttonTitle:
-                    "Entendido"
+                    scheduleViewModel.bookingMessage,
+                buttonTitle: "Entendido"
             ) {
-                scheduleViewModel
-                    .closeSuccess()
+                scheduleViewModel.closeSuccess()
             }
             .zIndex(300)
         }
 
-        if scheduleViewModel
-            .showBookingError
-        {
+        if scheduleViewModel.showBookingError {
             BeastAlertDialog(
                 style: .error,
                 title: "¡Atención!",
                 message:
-                    scheduleViewModel
-                    .bookingMessage,
-                buttonTitle:
-                    "Entendido"
+                    scheduleViewModel.bookingMessage,
+                buttonTitle: "Entendido"
             ) {
-                scheduleViewModel
-                    .closeError()
+                scheduleViewModel.closeError()
             }
             .zIndex(300)
         }
@@ -261,15 +218,12 @@ struct MainTabView: View {
 
         appearance.backgroundEffect =
             UIBlurEffect(
-                style:
-                    .systemUltraThinMaterial
+                style: .systemUltraThinMaterial
             )
 
         appearance.backgroundColor =
             UIColor(
-                Color(
-                    "BeastTabBackground"
-                )
+                Color("BeastTabBackground")
             )
             .withAlphaComponent(
                 0.94
@@ -277,34 +231,26 @@ struct MainTabView: View {
 
         appearance.shadowColor =
             UIColor.black
-            .withAlphaComponent(
-                0.05
-            )
+                .withAlphaComponent(
+                    0.05
+                )
 
         let itemAppearance =
             UITabBarItemAppearance()
 
         itemAppearance.normal.iconColor =
             UIColor(
-                Color(
-                    "BeastTabUnselected"
-                )
+                Color("BeastTabUnselected")
             )
 
-        itemAppearance
-            .normal
-            .titleTextAttributes = [
-                .foregroundColor:
-                    UIColor.clear,
-                .font:
-                    UIFont.systemFont(
-                        ofSize: 1
-                    )
-            ]
+        itemAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor.clear,
+            .font: UIFont.systemFont(
+                ofSize: 1
+            )
+        ]
 
-        itemAppearance
-            .normal
-            .titlePositionAdjustment =
+        itemAppearance.normal.titlePositionAdjustment =
             UIOffset(
                 horizontal: 0,
                 vertical: 100
@@ -312,25 +258,17 @@ struct MainTabView: View {
 
         itemAppearance.selected.iconColor =
             UIColor(
-                Color(
-                    "BeastTabSelected"
-                )
+                Color("BeastTabSelected")
             )
 
-        itemAppearance
-            .selected
-            .titleTextAttributes = [
-                .foregroundColor:
-                    UIColor.clear,
-                .font:
-                    UIFont.systemFont(
-                        ofSize: 1
-                    )
-            ]
+        itemAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor.clear,
+            .font: UIFont.systemFont(
+                ofSize: 1
+            )
+        ]
 
-        itemAppearance
-            .selected
-            .titlePositionAdjustment =
+        itemAppearance.selected.titlePositionAdjustment =
             UIOffset(
                 horizontal: 0,
                 vertical: 100
@@ -345,23 +283,19 @@ struct MainTabView: View {
         appearance.compactInlineLayoutAppearance =
             itemAppearance
 
-        UITabBar
-            .appearance()
+        UITabBar.appearance()
             .standardAppearance =
             appearance
 
-        UITabBar
-            .appearance()
+        UITabBar.appearance()
             .scrollEdgeAppearance =
             appearance
 
-        UITabBar
-            .appearance()
+        UITabBar.appearance()
             .isTranslucent =
             true
 
-        UITabBar
-            .appearance()
+        UITabBar.appearance()
             .itemPositioning =
             .fill
     }
