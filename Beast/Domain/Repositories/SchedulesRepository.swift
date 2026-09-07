@@ -28,4 +28,8 @@ protocol SchedulesRepository {
     func reservationHistory(
         day: String
     ) async -> [ClassItemEntity]
+
+    func memberships(
+        branch: String
+    ) async -> [PaqueteMemberShipModel]
 }

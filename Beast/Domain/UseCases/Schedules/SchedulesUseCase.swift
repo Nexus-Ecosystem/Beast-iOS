@@ -64,4 +64,12 @@ final class SchedulesUseCase {
             day: day
         )
     }
+    
+    func memberships(
+        branch: String
+    ) async -> [PaqueteMemberShipModel] {
+        await repository.memberships(
+            branch: branch
+        )
+    }
 }

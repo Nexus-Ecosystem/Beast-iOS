@@ -124,6 +124,14 @@ final class SchedulesRepositoryImpl: SchedulesRepository {
         )
     }
 
+    func memberships(
+        branch: String
+    ) async -> [PaqueteMemberShipModel] {
+        await firebaseDataSource.memberships(
+            branch: branch
+        )
+    }
+
     private func publishSchedules() async {
         guard !currentDay.isEmpty else {
             return

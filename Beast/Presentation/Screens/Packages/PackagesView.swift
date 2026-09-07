@@ -1,64 +1,139 @@
 import SwiftUI
 
 struct PackagesView: View {
-
-    private let horizontalPadding: CGFloat = 22
-    private let gridSpacing: CGFloat = 16
+    @StateObject private var viewModel =
+        PackagesViewModel()
 
     var body: some View {
-        NavigationStack {
-            GeometryReader { proxy in
-                let contentWidth = proxy.size.width - (horizontalPadding * 2)
-                let cardWidth = (contentWidth - gridSpacing) / 2
+        ZStack {
+            BeastColors.background
+                .ignoresSafeArea()
 
-                ZStack(alignment: .top) {
-                    BeastPackageColors.background
-                        .ignoresSafeArea(.all)
-
-                    ScrollView(showsIndicators: false) {
-                        VStack(spacing: 24) {
-                            PopularPackageCardView(
-                                package: PackageMockData.popularPackage,
-                                width: contentWidth
-                            )
-
-                            packagesSection(cardWidth: cardWidth)
-                        }
-                        .padding(.top, 118)
-                        .padding(.bottom, 32)
-                        .frame(width: contentWidth)
-                        .padding(.horizontal, horizontalPadding)
-                    }
-                    .scrollContentBackground(.hidden)
-
-                    PackagesHeaderView()
-                }
-                .navigationBarHidden(true)
-            }
-        }
-    }
-
-    private func packagesSection(cardWidth: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("Paquetes especiales")
-                .font(.system(size: 21, weight: .heavy, design: .rounded))
-                .foregroundStyle(BeastPackageColors.textPrimary)
-
-            LazyVGrid(
-                columns: [
-                    GridItem(.fixed(cardWidth), spacing: gridSpacing),
-                    GridItem(.fixed(cardWidth), spacing: gridSpacing)
-                ],
-                spacing: gridSpacing
+            ScrollView(
+                showsIndicators: false
             ) {
-                ForEach(PackageMockData.specialPackages) { package in
-                    SpecialPackageCardView(
-                        package: package,
-                        width: cardWidth
-                    )
+                LazyVStack(
+                    spacing: 18
+                ) {
+                    header
+
+                    ForEach(
+                        viewModel.packages
+                    ) { package in
+                        MembershipCard(
+                            package: package,
+                            isActive:
+                                viewModel.isActive(
+                                    package
+                                ),
+                            isExpired:
+                                viewModel.isExpired(
+                                    package
+                                ),
+                            isEmpty:
+                                viewModel.isPackageEmpty(
+                                    package
+                                ),
+                            actionTitle:
+                                viewModel.actionTitle(
+                                    for: package
+                                ),
+                            actionEnabled:
+                                viewModel.canBuy(
+                                    package
+                                ),
+                            onBuy: {
+                                viewModel.selectPackage(
+                                    package
+                                )
+                            }
+                        )
+                    }
+
+                    Spacer()
+                        .frame(
+                            height: 120
+                        )
                 }
+                .padding(
+                    .horizontal,
+                    24
+                )
+            }
+
+            if viewModel.isLoading {
+                BeastLoadingOverlay()
+            }
+
+            if let error =
+                viewModel.errorMessage
+            {
+                BeastAlertDialog(
+                    style: .error,
+                    message: error
+                ) {
+                    viewModel.resetError()
+                }
+                .zIndex(40)
             }
         }
-        .frame(width: (cardWidth * 2) + gridSpacing, alignment: .leading)
+        .task {
+            await viewModel.load()
+        }
+        .refreshable {
+            await viewModel.refresh()
+        }
+        .fullScreenCover(
+            isPresented:
+                $viewModel.showPurchaseConfirmation
+        ) {
+            if let package =
+                viewModel.selectedPackage
+            {
+                PurchaseConfirmationView(
+                    package: package,
+                    userName:
+                        viewModel.userName,
+                    phone:
+                        "523323542375"
+                ) {
+                    viewModel
+                        .dismissPurchaseConfirmation()
+                }
+                .presentationBackground(
+                    .clear
+                )
+            }
+        }
     }
+
+    private var header: some View {
+        HStack {
+            Text("Paquetes")
+                .font(
+                    .system(
+                        size: 30,
+                        weight: .black
+                    )
+                )
+                .italic()
+                .foregroundStyle(
+                    BeastColors.textPrimary
+                )
+
+            Spacer()
+        }
+        .padding(
+            .top,
+            20
+        )
+        .padding(
+            .bottom,
+            6
+        )
+    }
+}
+
+#Preview {
+    PackagesView()
 }
