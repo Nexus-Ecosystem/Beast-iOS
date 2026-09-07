@@ -6,26 +6,32 @@ struct ProfileView: View {
     @AppStorage("dark_mode")
     private var darkMode = false
 
-    var onEditProfile: () -> Void = {}
-    var onNotifications: () -> Void = {}
+    @State private var showEditProfile = false
+    @State private var showNotifications = false
+    @State private var showResponsiva = false
+    @State private var showSignature = false
+
     var onPackages: () -> Void = {}
     var onChangePassword: (String) -> Void = { _ in }
     var onPolicies: () -> Void = {}
-    var onResponsiva: (String) -> Void = { _ in }
 
     var body: some View {
         ZStack {
-            Color("BeastBackground")
+            BeastColors.background
                 .ignoresSafeArea()
 
-            ScrollView(showsIndicators: false) {
+            ScrollView(
+                showsIndicators: false
+            ) {
                 LazyVStack(
                     alignment: .leading,
                     spacing: 18
                 ) {
                     ProfileHeaderCard(
                         profile: viewModel.profile,
-                        onTap: onEditProfile
+                        onTap: {
+                            showEditProfile = true
+                        }
                     )
 
                     subscriptionSection
@@ -39,33 +45,74 @@ struct ProfileView: View {
                     ProfilePoweredByNexus()
 
                     Spacer()
-                        .frame(height: 90)
+                        .frame(
+                            height: 90
+                        )
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
+                .padding(
+                    .horizontal,
+                    20
+                )
+                .padding(
+                    .top,
+                    12
+                )
             }
         }
-        .navigationTitle("Perfil de Usuario")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle(
+            "Perfil de Usuario"
+        )
+        .navigationBarTitleDisplayMode(
+            .inline
+        )
+        .navigationDestination(
+            isPresented: $showEditProfile
+        ) {
+            EditProfileView()
+        }
+        .navigationDestination(
+            isPresented: $showNotifications
+        ) {
+            NotificationsView()
+        }
+        .navigationDestination(
+            isPresented: $showResponsiva
+        ) {
+            ResponsivePDFView(
+                urlString:
+                    viewModel.profile.responsiveURL
+            )
+        }
+        .navigationDestination(
+            isPresented: $showSignature
+        ) {
+            PrivacySignatureView {
+                viewModel.onAppear()
+            }
+        }
         .toolbar {
             ToolbarItem(
                 placement: .topBarTrailing
             ) {
                 Button {
-                    onNotifications()
+                    showNotifications = true
                 } label: {
-                    Image(systemName: "bell.fill")
-                        .font(
-                            .system(
-                                size: 16,
-                                weight: .semibold
-                            )
+                    Image(
+                        systemName: "bell.fill"
+                    )
+                    .font(
+                        .system(
+                            size: 16,
+                            weight: .semibold
                         )
-                        .foregroundStyle(
-                            BeastColors.primary
-                        )
+                    )
+                    .foregroundStyle(
+                        BeastColors.primary
+                    )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(
+                    .plain
+                )
             }
         }
         .onAppear {
@@ -111,15 +158,16 @@ struct ProfileView: View {
 
                 if !viewModel.profile.responsiveURL.isEmpty {
                     Divider()
-                        .padding(.leading, 54)
+                        .padding(
+                            .leading,
+                            54
+                        )
 
                     ProfileMenuRow(
                         icon: "doc.text.fill",
                         title: "Responsiva"
                     ) {
-                        onResponsiva(
-                            viewModel.profile.responsiveURL
-                        )
+                        openResponsiva()
                     }
                 }
             }
@@ -143,7 +191,10 @@ struct ProfileView: View {
                 ) {}
 
                 Divider()
-                    .padding(.leading, 54)
+                    .padding(
+                        .leading,
+                        54
+                    )
 
                 ProfileMenuToggleRow(
                     icon: "moon.fill",
@@ -152,7 +203,10 @@ struct ProfileView: View {
                 )
 
                 Divider()
-                    .padding(.leading, 54)
+                    .padding(
+                        .leading,
+                        54
+                    )
 
                 ProfileMenuRow(
                     icon: "lock.fill",
@@ -170,53 +224,83 @@ struct ProfileView: View {
         Button {
             viewModel.requestLogout()
         } label: {
-            Text("CERRAR SESIÓN")
-                .font(
-                    .system(
-                        size: 12,
-                        weight: .black
-                    )
+            Text(
+                "CERRAR SESIÓN"
+            )
+            .font(
+                .system(
+                    size: 12,
+                    weight: .black
                 )
-                .foregroundStyle(
-                    Color(
-                        red: 0.90,
-                        green: 0.32,
-                        blue: 0.32
-                    )
+            )
+            .foregroundStyle(
+                BeastColors.danger
+            )
+            .frame(
+                maxWidth: .infinity
+            )
+            .frame(
+                height: 52
+            )
+            .background(
+                RoundedRectangle(
+                    cornerRadius: 22,
+                    style: .continuous
                 )
-                .frame(
-                    maxWidth: .infinity
+                .fill(
+                    BeastColors.surface
                 )
-                .frame(height: 52)
-                .background(
-                    RoundedRectangle(
-                        cornerRadius: 22,
-                        style: .continuous
-                    )
-                    .fill(
-                        Color(
-                            .secondarySystemBackground
-                        )
-                    )
+            )
+            .overlay(
+                RoundedRectangle(
+                    cornerRadius: 22,
+                    style: .continuous
                 )
+                .stroke(
+                    BeastColors.border,
+                    lineWidth: 1
+                )
+            )
         }
-        .buttonStyle(.plain)
-        .padding(.top, 2)
+        .buttonStyle(
+            .plain
+        )
+        .padding(
+            .top,
+            2
+        )
     }
 
     private func sectionTitle(
         _ title: String
     ) -> some View {
-        Text(title)
-            .font(
-                .system(
-                    size: 13,
-                    weight: .bold
-                )
+        Text(
+            title
+        )
+        .font(
+            .system(
+                size: 13,
+                weight: .bold
             )
-            .foregroundStyle(
-                .secondary
-            )
-            .padding(.leading, 6)
+        )
+        .foregroundStyle(
+            BeastColors.textSecondary
+        )
+        .padding(
+            .leading,
+            6
+        )
+    }
+
+    private func openResponsiva() {
+        if viewModel.profile.responsiveSigned {
+            guard !viewModel.profile.responsiveURL.isEmpty else {
+                return
+            }
+
+            showResponsiva = true
+        } else {
+            showSignature = true
+        }
     }
 }

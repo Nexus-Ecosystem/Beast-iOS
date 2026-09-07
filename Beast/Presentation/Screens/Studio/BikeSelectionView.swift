@@ -7,45 +7,19 @@ struct BikeSelectionView: View {
 
     private let cellSize: CGFloat = 64
 
-    private let purple = Color(
-        red: 0.46,
-        green: 0.27,
-        blue: 1.0
-    )
+    private let availableColor = BeastColors.success
 
-    private let availableColor = Color(
-        red: 0.64,
-        green: 0.90,
-        blue: 0.21
-    )
+    private let myBikeColor = BeastColors.yellowAccent
 
-    private let myBikeColor = Color(
-        red: 1.0,
-        green: 0.67,
-        blue: 0.25
-    )
+    private let occupiedColor = BeastColors.textSecondary
 
-    private let occupiedColor = Color(
-        red: 0.44,
-        green: 0.44,
-        blue: 0.48
-    )
+    private let maintenanceColor = BeastColors.danger
 
-    private let maintenanceColor = Color(
-        red: 0.98,
-        green: 0.44,
-        blue: 0.52
-    )
-
-    private let furnitureColor = Color(
-        red: 0.46,
-        green: 0.27,
-        blue: 1.0
-    )
+    private let furnitureColor = BeastColors.primary
 
     var body: some View {
         ZStack {
-            Color("BeastBackground")
+            BeastColors.background
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -115,7 +89,7 @@ struct BikeSelectionView: View {
                     )
                 )
                 .foregroundStyle(
-                    purple
+                    BeastColors.primary
                 )
             }
         }
@@ -148,7 +122,7 @@ struct BikeSelectionView: View {
                     )
                 )
                 .foregroundStyle(
-                    .primary
+                    BeastColors.textPrimary
                 )
 
                 Text(
@@ -161,7 +135,7 @@ struct BikeSelectionView: View {
                     )
                 )
                 .foregroundStyle(
-                    .secondary
+                    BeastColors.textSecondary
                 )
 
                 Text(
@@ -174,7 +148,7 @@ struct BikeSelectionView: View {
                     )
                 )
                 .foregroundStyle(
-                    purple
+                    BeastColors.primary
                 )
             }
 
@@ -190,9 +164,7 @@ struct BikeSelectionView: View {
                 style: .continuous
             )
             .fill(
-                Color(
-                    .secondarySystemBackground
-                )
+                BeastColors.surface
             )
         )
         .overlay(
@@ -201,9 +173,7 @@ struct BikeSelectionView: View {
                 style: .continuous
             )
             .stroke(
-                Color.primary.opacity(
-                    0.75
-                ),
+                BeastColors.border,
                 lineWidth: 1
             )
         )
@@ -243,11 +213,7 @@ struct BikeSelectionView: View {
         ZStack {
             Circle()
                 .fill(
-                    Color(
-                        red: 0.12,
-                        green: 0.12,
-                        blue: 0.14
-                    )
+                    BeastColors.primary
                 )
 
             Text(
@@ -262,7 +228,7 @@ struct BikeSelectionView: View {
                 )
             )
             .foregroundStyle(
-                .white
+                BeastColors.buttonText
             )
         }
     }
@@ -329,7 +295,7 @@ struct BikeSelectionView: View {
                 )
             )
             .foregroundStyle(
-                .secondary
+                BeastColors.textSecondary
             )
             .fixedSize()
         }
@@ -349,9 +315,7 @@ struct BikeSelectionView: View {
                         style: .continuous
                     )
                     .fill(
-                        Color(
-                            .secondarySystemBackground
-                        )
+                        BeastColors.surface
                     )
                     .frame(
                         width: max(
@@ -420,9 +384,7 @@ struct BikeSelectionView: View {
                     style: .continuous
                 )
                 .stroke(
-                    Color.primary.opacity(
-                        0.04
-                    ),
+                    BeastColors.border,
                     lineWidth: 1
                 )
             }
@@ -560,7 +522,7 @@ struct BikeSelectionView: View {
                             )
                         )
                         .foregroundStyle(
-                            .primary
+                            BeastColors.textPrimary
                         )
                     }
                 } else {
@@ -766,6 +728,9 @@ struct BikeSelectionView: View {
                                 weight: .black
                             )
                         )
+                        .foregroundStyle(
+                            BeastColors.textPrimary
+                        )
 
                         Text(
                             isMine
@@ -778,7 +743,7 @@ struct BikeSelectionView: View {
                             )
                         )
                         .foregroundStyle(
-                            .secondary
+                            BeastColors.textSecondary
                         )
                     }
 
@@ -797,7 +762,7 @@ struct BikeSelectionView: View {
                         )
                     )
                     .foregroundStyle(
-                        .secondary
+                        BeastColors.textSecondary
                     )
 
                     Text(
@@ -861,7 +826,7 @@ struct BikeSelectionView: View {
                             )
                         )
                         .foregroundStyle(
-                            .white
+                            BeastColors.buttonText
                         )
                         .frame(
                             maxWidth:
@@ -873,7 +838,7 @@ struct BikeSelectionView: View {
                         .background(
                             Capsule()
                                 .fill(
-                                    purple
+                                    BeastColors.primary
                                 )
                         )
                     }
@@ -896,7 +861,7 @@ struct BikeSelectionView: View {
                         )
                     )
                     .foregroundStyle(
-                        .secondary
+                        BeastColors.textSecondary
                     )
                     .frame(
                         maxWidth: .infinity
@@ -919,9 +884,17 @@ struct BikeSelectionView: View {
                     style: .continuous
                 )
                 .fill(
-                    Color(
-                        .systemBackground
-                    )
+                    BeastColors.surface
+                )
+            )
+            .overlay(
+                RoundedRectangle(
+                    cornerRadius: 24,
+                    style: .continuous
+                )
+                .stroke(
+                    BeastColors.border,
+                    lineWidth: 1
                 )
             )
         }
