@@ -20,4 +20,30 @@ struct AllDataProfileUserSystem: Codable {
     let activePackage: CurrentPackageInfo
     let historyClasses: [ClassHistory]
     let historyPayments: [PaymentHistory]
+
+    func withBranches(
+        _ branches: [String]
+    ) -> AllDataProfileUserSystem {
+        AllDataProfileUserSystem(
+            typeUser: typeUser,
+            fechaPago: fechaPago,
+            fotoPerfil: fotoPerfil,
+            branches: branches,
+            createdAt: createdAt,
+            fullName: fullName,
+            phone: phone,
+            email: email,
+            membershipName: membershipName,
+            urlPhoto: urlPhoto,
+            idSocio: idSocio,
+            nipSocio: nipSocio,
+            status: status,
+            responsiveSigned: responsiveSigned,
+            urlDocumentResponsiva: urlDocumentResponsiva,
+            tokenFirebase: tokenFirebase,
+            activePackage: activePackage,
+            historyClasses: historyClasses,
+            historyPayments: historyPayments
+        )
+    }
 }

@@ -1,18 +1,29 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @ObservedObject var viewModel: ProfileViewModel
+    @ObservedObject
+    var viewModel:
+        ProfileViewModel
 
     @AppStorage("dark_mode")
     private var darkMode = false
 
-    @State private var showEditProfile = false
-    @State private var showNotifications = false
-    @State private var showResponsiva = false
-    @State private var showSignature = false
+    @State
+    private var showEditProfile = false
+
+    @State
+    private var showNotifications = false
+
+    @State
+    private var showResponsiva = false
+
+    @State
+    private var showSignature = false
+
+    @State
+    private var showChangePassword = false
 
     var onPackages: () -> Void = {}
-    var onChangePassword: (String) -> Void = { _ in }
     var onPolicies: () -> Void = {}
 
     var body: some View {
@@ -28,20 +39,17 @@ struct ProfileView: View {
                     spacing: 18
                 ) {
                     ProfileHeaderCard(
-                        profile: viewModel.profile,
+                        profile:
+                            viewModel.profile,
                         onTap: {
                             showEditProfile = true
                         }
                     )
 
                     subscriptionSection
-
                     informationSection
-
                     configurationSection
-
                     logoutButton
-
                     ProfilePoweredByNexus()
 
                     Spacer()
@@ -66,17 +74,29 @@ struct ProfileView: View {
             .inline
         )
         .navigationDestination(
-            isPresented: $showEditProfile
+            isPresented:
+                $showEditProfile
         ) {
             EditProfileView()
         }
         .navigationDestination(
-            isPresented: $showNotifications
+            isPresented:
+                $showNotifications
         ) {
             NotificationsView()
         }
         .navigationDestination(
-            isPresented: $showResponsiva
+            isPresented:
+                $showChangePassword
+        ) {
+            ChangePasswordView(
+                email:
+                    viewModel.profile.email
+            )
+        }
+        .navigationDestination(
+            isPresented:
+                $showResponsiva
         ) {
             ResponsivePDFView(
                 urlString:
@@ -84,21 +104,24 @@ struct ProfileView: View {
             )
         }
         .navigationDestination(
-            isPresented: $showSignature
+            isPresented:
+                $showSignature
         ) {
             PrivacySignatureView {
-                viewModel.onAppear()
+                showSignature = false
             }
         }
         .toolbar {
             ToolbarItem(
-                placement: .topBarTrailing
+                placement:
+                    .topBarTrailing
             ) {
                 Button {
                     showNotifications = true
                 } label: {
                     Image(
-                        systemName: "bell.fill"
+                        systemName:
+                            "bell.fill"
                     )
                     .font(
                         .system(
@@ -110,20 +133,14 @@ struct ProfileView: View {
                         BeastColors.primary
                     )
                 }
-                .buttonStyle(
-                    .plain
-                )
+                .buttonStyle(.plain)
             }
-        }
-        .onAppear {
-            viewModel.onAppear()
-        }
-        .onDisappear {
-            viewModel.stop()
         }
     }
 
-    private var subscriptionSection: some View {
+    private var subscriptionSection:
+        some View
+    {
         VStack(
             alignment: .leading,
             spacing: 12
@@ -133,13 +150,17 @@ struct ProfileView: View {
             )
 
             ProfileMembershipCard(
-                profile: viewModel.profile,
-                onPurchase: onPackages
+                profile:
+                    viewModel.profile,
+                onPurchase:
+                    onPackages
             )
         }
     }
 
-    private var informationSection: some View {
+    private var informationSection:
+        some View
+    {
         VStack(
             alignment: .leading,
             spacing: 12
@@ -150,31 +171,39 @@ struct ProfileView: View {
 
             ProfileMenuCard {
                 ProfileMenuRow(
-                    icon: "shield.fill",
-                    title: "Políticas e Información"
+                    icon:
+                        "shield.fill",
+                    title:
+                        "Políticas e Información"
                 ) {
                     onPolicies()
                 }
 
-                if !viewModel.profile.responsiveURL.isEmpty {
-                    Divider()
-                        .padding(
-                            .leading,
-                            54
-                        )
+                Divider()
+                    .padding(
+                        .leading,
+                        54
+                    )
 
-                    ProfileMenuRow(
-                        icon: "doc.text.fill",
-                        title: "Responsiva"
-                    ) {
-                        openResponsiva()
-                    }
+                ProfileMenuRow(
+                    icon:
+                        viewModel.profile.responsiveSigned
+                        ? "doc.text.fill"
+                        : "signature",
+                    title:
+                        viewModel.profile.responsiveSigned
+                        ? "Responsiva"
+                        : "Firmar responsiva"
+                ) {
+                    openResponsiva()
                 }
             }
         }
     }
 
-    private var configurationSection: some View {
+    private var configurationSection:
+        some View
+    {
         VStack(
             alignment: .leading,
             spacing: 12
@@ -184,22 +213,13 @@ struct ProfileView: View {
             )
 
             ProfileMenuCard {
-                ProfileMenuRow(
-                    icon: "globe",
-                    title: "Lenguaje",
-                    value: "Español (MX)"
-                ) {}
-
-                Divider()
-                    .padding(
-                        .leading,
-                        54
-                    )
-
                 ProfileMenuToggleRow(
-                    icon: "moon.fill",
-                    title: "Modo Oscuro",
-                    isOn: $darkMode
+                    icon:
+                        "moon.fill",
+                    title:
+                        "Modo Oscuro",
+                    isOn:
+                        $darkMode
                 )
 
                 Divider()
@@ -209,18 +229,20 @@ struct ProfileView: View {
                     )
 
                 ProfileMenuRow(
-                    icon: "lock.fill",
-                    title: "Cambiar contraseña"
+                    icon:
+                        "lock.fill",
+                    title:
+                        "Cambiar contraseña"
                 ) {
-                    onChangePassword(
-                        viewModel.profile.email
-                    )
+                    showChangePassword = true
                 }
             }
         }
     }
 
-    private var logoutButton: some View {
+    private var logoutButton:
+        some View
+    {
         Button {
             viewModel.requestLogout()
         } label: {
@@ -262,9 +284,7 @@ struct ProfileView: View {
                 )
             )
         }
-        .buttonStyle(
-            .plain
-        )
+        .buttonStyle(.plain)
         .padding(
             .top,
             2
@@ -274,27 +294,29 @@ struct ProfileView: View {
     private func sectionTitle(
         _ title: String
     ) -> some View {
-        Text(
-            title
-        )
-        .font(
-            .system(
-                size: 13,
-                weight: .bold
+        Text(title)
+            .font(
+                .system(
+                    size: 13,
+                    weight: .bold
+                )
             )
-        )
-        .foregroundStyle(
-            BeastColors.textSecondary
-        )
-        .padding(
-            .leading,
-            6
-        )
+            .foregroundStyle(
+                BeastColors.textSecondary
+            )
+            .padding(
+                .leading,
+                6
+            )
     }
 
     private func openResponsiva() {
         if viewModel.profile.responsiveSigned {
-            guard !viewModel.profile.responsiveURL.isEmpty else {
+            guard !viewModel
+                .profile
+                .responsiveURL
+                .isEmpty
+            else {
                 return
             }
 

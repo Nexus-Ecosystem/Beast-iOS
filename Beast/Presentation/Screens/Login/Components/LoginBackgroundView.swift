@@ -1,38 +1,50 @@
-// Path: Presentation/Auth/Login/Components/LoginBackgroundView.swift
-
 import SwiftUI
 
 struct LoginBackgroundView: View {
+    @Environment(\.colorScheme)
+    private var colorScheme
 
     var body: some View {
         ZStack {
-            Image("login_background")
+            Image("login_bg")
                 .resizable()
                 .scaledToFill()
                 .ignoresSafeArea()
-                .opacity(0.18)
 
-            LinearGradient(
-                colors: [
-                    BeastColors.background.opacity(0.62),
-                    BeastColors.background.opacity(0.58),
-                    BeastColors.background.opacity(0.86)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            if colorScheme == .dark {
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.72),
+                        Color.black.opacity(0.82),
+                        Color.black.opacity(0.94)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
-            LinearGradient(
-                colors: [
-                    BeastColors.primary.opacity(0.08),
-                    Color.clear,
-                    BeastColors.background.opacity(0.78)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        BeastColors.primary.opacity(0.04),
+                        Color.clear,
+                        Color.black.opacity(0.32)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(0.88),
+                        Color.white.opacity(0.93),
+                        Color.white.opacity(0.97)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            }
         }
     }
 }

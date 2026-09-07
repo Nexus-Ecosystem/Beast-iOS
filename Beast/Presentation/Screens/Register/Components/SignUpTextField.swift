@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct LoginTextField: View {
+struct SignUpTextField: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -9,21 +9,30 @@ struct LoginTextField: View {
 
     @Binding var text: String
 
-    private var fieldBackground: Color {
+    var keyboardType:
+        UIKeyboardType = .default
+
+    private var fieldBackground:
+        Color
+    {
         colorScheme == .dark
             ? Color.white
             : BeastColors.loginInputBackground
     }
 
-    private var fieldText: Color {
+    private var fieldText:
+        Color
+    {
         colorScheme == .dark
             ? Color.black
-            : BeastColors.inputText
+            : Color.white
     }
 
-    private var placeholderColor: Color {
+    private var placeholderColor:
+        Color
+    {
         colorScheme == .dark
-            ? Color.black.opacity(0.48)
+            ? Color.gray
             : BeastColors.inputPlaceholder
     }
 
@@ -39,11 +48,14 @@ struct LoginTextField: View {
                         weight: .black
                     )
                 )
+                .tracking(1)
                 .foregroundStyle(
                     BeastColors.primary
                 )
-                .tracking(1.2)
-                .padding(.leading, 12)
+                .padding(
+                    .leading,
+                    12
+                )
 
             ZStack(
                 alignment: .leading
@@ -52,8 +64,7 @@ struct LoginTextField: View {
                     Text(placeholder)
                         .font(
                             .system(
-                                size: 14,
-                                weight: .regular
+                                size: 14
                             )
                         )
                         .foregroundStyle(
@@ -69,10 +80,18 @@ struct LoginTextField: View {
                     "",
                     text: $text
                 )
+                .keyboardType(
+                    keyboardType
+                )
+                .textInputAutocapitalization(
+                    keyboardType == .emailAddress
+                        ? .never
+                        : .words
+                )
+                .autocorrectionDisabled()
                 .font(
                     .system(
-                        size: 14,
-                        weight: .regular
+                        size: 14
                     )
                 )
                 .foregroundStyle(
@@ -86,7 +105,7 @@ struct LoginTextField: View {
                     18
                 )
             }
-            .frame(height: 48)
+            .frame(height: 50)
             .background(
                 fieldBackground
             )

@@ -15,6 +15,9 @@ struct MainTabView: View {
     @State private var bikeSelectionContext: BikeSelectionContext?
     @State private var showBikeSelection = false
 
+    @State private var showSignature = false
+    @State private var hasValidatedResponsive = false
+
     var body: some View {
         ZStack {
             Color("BeastBackground")
@@ -90,9 +93,39 @@ struct MainTabView: View {
 
             globalOverlays
         }
+        .fullScreenCover(
+            isPresented: $showSignature
+        ) {
+            NavigationStack {
+                PrivacySignatureView {
+                    showSignature = false
+                }
+            }
+        }
         .ignoresSafeArea(.keyboard)
         .onAppear {
             configureTabBar()
+            profileViewModel.onAppear()
+        }
+        .onChange(
+            of: profileViewModel.profile.email
+        ) { _, email in
+            guard !email.isEmpty else {
+                return
+            }
+
+            validateResponsiveIfNeeded()
+        }
+        .onChange(
+            of: profileViewModel.profile.responsiveSigned
+        ) { _, signed in
+            guard hasValidatedResponsive else {
+                return
+            }
+
+            if signed {
+                showSignature = false
+            }
         }
         .onChange(
             of: colorScheme
@@ -104,7 +137,6 @@ struct MainTabView: View {
     @ViewBuilder
     private var globalOverlays: some View {
         scheduleOverlays
-
         profileOverlays
     }
 
@@ -237,6 +269,22 @@ struct MainTabView: View {
                 scheduleViewModel.closeError()
             }
             .zIndex(3000)
+        }
+    }
+
+    private func validateResponsiveIfNeeded() {
+        guard !hasValidatedResponsive else {
+            return
+        }
+
+        guard !profileViewModel.profile.email.isEmpty else {
+            return
+        }
+
+        hasValidatedResponsive = true
+
+        if !profileViewModel.profile.responsiveSigned {
+            showSignature = true
         }
     }
 
