@@ -3,15 +3,18 @@ import SwiftUI
 struct ScheduleLoadingView: View {
     var body: some View {
         ZStack {
-            Color.black
+            BeastColors.background
                 .opacity(
-                    0.12
+                    0.70
                 )
                 .ignoresSafeArea()
 
             ProgressView()
                 .controlSize(
                     .large
+                )
+                .tint(
+                    BeastColors.primary
                 )
         }
     }

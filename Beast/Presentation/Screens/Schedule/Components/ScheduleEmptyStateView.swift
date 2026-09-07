@@ -1,25 +1,15 @@
 import SwiftUI
 
 struct ScheduleEmptyStateView: View {
-    private let purple = Color(
-        red: 0.46,
-        green: 0.27,
-        blue: 1.0
-    )
-
-    private let neon = Color(
-        red: 0.76,
-        green: 1.0,
-        blue: 0.0
-    )
-
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
                 RoundedRectangle(
                     cornerRadius: 22
                 )
-                .fill(Color.primary.opacity(0.85))
+                .fill(
+                    BeastColors.surface
+                )
 
                 Image(
                     systemName: "clock"
@@ -30,7 +20,9 @@ struct ScheduleEmptyStateView: View {
                         weight: .regular
                     )
                 )
-                .foregroundStyle(neon)
+                .foregroundStyle(
+                    BeastColors.yellowPrimary
+                )
             }
             .frame(
                 width: 78,
@@ -45,7 +37,9 @@ struct ScheduleEmptyStateView: View {
                             weight: .medium
                         )
                     )
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(
+                        BeastColors.textPrimary
+                    )
 
                 Image(
                     systemName: "calendar"
@@ -56,7 +50,9 @@ struct ScheduleEmptyStateView: View {
                         weight: .bold
                     )
                 )
-                .foregroundStyle(purple)
+                .foregroundStyle(
+                    BeastColors.primary
+                )
             }
             .padding(.top, 25)
 
@@ -68,7 +64,9 @@ struct ScheduleEmptyStateView: View {
                     )
                     .italic()
                 )
-                .foregroundStyle(.primary)
+                .foregroundStyle(
+                    BeastColors.textPrimary
+                )
                 .padding(.top, 24)
 
             Text("DISPONIBLES")
@@ -79,7 +77,9 @@ struct ScheduleEmptyStateView: View {
                     )
                     .italic()
                 )
-                .foregroundStyle(purple)
+                .foregroundStyle(
+                    BeastColors.primary
+                )
 
             Text(
                 "Parece que no hay clases programadas para esta fecha. ¡Prueba buscando en otro día o en una sucursal cercana!"
@@ -87,7 +87,9 @@ struct ScheduleEmptyStateView: View {
             .font(
                 .system(size: 13)
             )
-            .foregroundStyle(.primary)
+            .foregroundStyle(
+                BeastColors.textSecondary
+            )
             .multilineTextAlignment(.center)
             .lineSpacing(4)
             .padding(.horizontal, 40)

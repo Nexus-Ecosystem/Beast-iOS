@@ -4,15 +4,9 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @State private var selectedReservationPage = 0
 
-    private let purple = Color(
-        red: 0.46,
-        green: 0.27,
-        blue: 1.0
-    )
-
     var body: some View {
         ZStack {
-            Color("BeastBackground")
+            BeastColors.background
                 .ignoresSafeArea()
 
             ScrollView(
@@ -42,6 +36,52 @@ struct HomeView: View {
                 }
             }
 
+            VStack {
+                Spacer()
+
+                HStack {
+                    Spacer()
+
+                    NavigationLink {
+                        QrCheckInView()
+                    } label: {
+                        Image(
+                            systemName: "qrcode"
+                        )
+                        .font(
+                            .system(
+                                size: 23,
+                                weight: .bold
+                            )
+                        )
+                        .foregroundStyle(
+                            Color.black
+                        )
+                        .frame(
+                            width: 58,
+                            height: 58
+                        )
+                        .background(
+                            RoundedRectangle(
+                                cornerRadius: 14
+                            )
+                            .fill(
+                                BeastColors.yellowPrimary
+                            )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(
+                        .trailing,
+                        24
+                    )
+                    .padding(
+                        .bottom,
+                        20
+                    )
+                }
+            }
+
             if viewModel.isLoading {
                 BeastLoadingOverlay()
             }
@@ -64,7 +104,9 @@ struct HomeView: View {
                     )
                 )
                 .italic()
-                .foregroundStyle(purple)
+                .foregroundStyle(
+                    BeastColors.primary
+                )
 
             Spacer()
         }
@@ -98,7 +140,9 @@ struct HomeView: View {
                             weight: .bold
                         )
                     )
-                    .foregroundStyle(purple)
+                    .foregroundStyle(
+                        BeastColors.primary
+                    )
 
                 HStack(
                     alignment: .bottom
@@ -111,6 +155,9 @@ struct HomeView: View {
                             )
                         )
                         .italic()
+                        .foregroundStyle(
+                            BeastColors.textPrimary
+                        )
 
                     Spacer()
 
@@ -122,7 +169,9 @@ struct HomeView: View {
                             size: 11
                         )
                     )
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(
+                        BeastColors.textSecondary
+                    )
                     .padding(
                         .bottom,
                         5
@@ -177,8 +226,8 @@ struct HomeView: View {
                         Circle()
                             .fill(
                                 index == selectedReservationPage
-                                ? purple
-                                : Color.secondary.opacity(
+                                ? BeastColors.primary
+                                : BeastColors.textSecondary.opacity(
                                     0.25
                                 )
                             )
@@ -216,9 +265,7 @@ struct HomeView: View {
             ZStack {
                 Circle()
                     .fill(
-                        Color(
-                            .secondarySystemBackground
-                        )
+                        BeastColors.surface
                     )
                     .frame(
                         width: 64,
@@ -234,11 +281,7 @@ struct HomeView: View {
                     )
                 )
                 .foregroundStyle(
-                    Color(
-                        red: 0.29,
-                        green: 0.33,
-                        blue: 0.18
-                    )
+                    BeastColors.primary
                 )
             }
 
@@ -249,6 +292,9 @@ struct HomeView: View {
                         weight: .black
                     )
                 )
+                .foregroundStyle(
+                    BeastColors.textPrimary
+                )
 
             Text(
                 "¿Listo para tu siguiente reto?\nDescubre las clases de cada día y agenda en el horario que más te convenga."
@@ -258,7 +304,9 @@ struct HomeView: View {
                     size: 12
                 )
             )
-            .foregroundStyle(.secondary)
+            .foregroundStyle(
+                BeastColors.textSecondary
+            )
             .multilineTextAlignment(
                 .center
             )
@@ -273,9 +321,7 @@ struct HomeView: View {
                 cornerRadius: 28
             )
             .fill(
-                Color(
-                    .secondarySystemBackground
-                )
+                BeastColors.surface
             )
         )
         .padding(
@@ -302,19 +348,29 @@ struct HomeView: View {
                         )
                     )
                     .italic()
+                    .foregroundStyle(
+                        BeastColors.textPrimary
+                    )
 
                 Spacer()
 
-                Text("VER TODO")
-                    .font(
-                        .system(
-                            size: 10,
-                            weight: .bold
+                NavigationLink {
+                    HistoryView()
+                } label: {
+                    Text("VER TODO")
+                        .font(
+                            .system(
+                                size: 10,
+                                weight: .bold
+                            )
                         )
-                    )
-                    .foregroundStyle(
-                        purple
-                    )
+                        .foregroundStyle(
+                            BeastColors.primary
+                        )
+                }
+                .buttonStyle(
+                    .plain
+                )
             }
 
             ForEach(
@@ -351,11 +407,7 @@ struct HomeView: View {
                 )
             )
             .foregroundStyle(
-                Color(
-                    red: 0.29,
-                    green: 0.33,
-                    blue: 0.18
-                )
+                BeastColors.primary
             )
 
             Text(
@@ -367,6 +419,9 @@ struct HomeView: View {
                     weight: .black
                 )
             )
+            .foregroundStyle(
+                BeastColors.textPrimary
+            )
 
             Text(
                 "Te invitamos a registrar tu primera clase en la sección de AGENDA."
@@ -376,7 +431,9 @@ struct HomeView: View {
                     size: 11
                 )
             )
-            .foregroundStyle(.secondary)
+            .foregroundStyle(
+                BeastColors.textSecondary
+            )
             .multilineTextAlignment(
                 .center
             )
@@ -390,9 +447,7 @@ struct HomeView: View {
                 cornerRadius: 28
             )
             .fill(
-                Color(
-                    .secondarySystemBackground
-                )
+                BeastColors.surface
             )
         )
         .padding(

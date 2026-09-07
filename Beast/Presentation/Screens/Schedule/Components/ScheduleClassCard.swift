@@ -7,18 +7,6 @@ struct ScheduleClassCard: View {
     let onAction: () -> Void
     let onSelectBike: () -> Void
 
-    private let purple = Color(
-        red: 0.46,
-        green: 0.27,
-        blue: 1.0
-    )
-
-    private let darkButton = Color(
-        red: 0.15,
-        green: 0.17,
-        blue: 0.20
-    )
-
     var body: some View {
         VStack(spacing: 18) {
             HStack(
@@ -40,8 +28,8 @@ struct ScheduleClassCard: View {
                         )
                         .foregroundStyle(
                             isDimmed
-                            ? Color.secondary
-                            : Color.primary
+                            ? BeastColors.textSecondary
+                            : BeastColors.textPrimary
                         )
 
                     Text("Maestr@: \(item.coach)")
@@ -51,7 +39,9 @@ struct ScheduleClassCard: View {
                                 weight: .regular
                             )
                         )
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(
+                            BeastColors.textSecondary
+                        )
                 }
 
                 Spacer()
@@ -84,7 +74,9 @@ struct ScheduleClassCard: View {
                     weight: .regular
                 )
             )
-            .foregroundStyle(.secondary)
+            .foregroundStyle(
+                BeastColors.textSecondary
+            )
             .frame(
                 maxWidth: .infinity,
                 alignment: .leading
@@ -132,7 +124,9 @@ struct ScheduleClassCard: View {
                                 weight: .bold
                             )
                         )
-                        .foregroundStyle(.white)
+                        .foregroundStyle(
+                            BeastColors.buttonText
+                        )
                         .frame(
                             maxWidth: .infinity
                         )
@@ -141,7 +135,9 @@ struct ScheduleClassCard: View {
                         )
                         .background(
                             Capsule()
-                                .fill(purple)
+                                .fill(
+                                    BeastColors.primary
+                                )
                         )
                 }
                 .buttonStyle(.plain)
@@ -155,7 +151,9 @@ struct ScheduleClassCard: View {
                         weight: .regular
                     )
                 )
-                .foregroundStyle(.secondary)
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
                 .multilineTextAlignment(.center)
                 .frame(
                     maxWidth: .infinity
@@ -168,9 +166,7 @@ struct ScheduleClassCard: View {
                 cornerRadius: 24
             )
             .fill(
-                Color(
-                    .secondarySystemBackground
-                )
+                BeastColors.surface
             )
         )
         .overlay(
@@ -239,7 +235,9 @@ struct ScheduleClassCard: View {
                     weight: .regular
                 )
             )
-            .foregroundStyle(.secondary)
+            .foregroundStyle(
+                BeastColors.textSecondary
+            )
 
             GeometryReader { proxy in
                 ZStack(
@@ -247,7 +245,7 @@ struct ScheduleClassCard: View {
                 ) {
                     Capsule()
                         .fill(
-                            darkButton
+                            BeastColors.border
                         )
                         .frame(
                             height: 3
@@ -305,11 +303,7 @@ struct ScheduleClassCard: View {
         ZStack {
             Circle()
                 .fill(
-                    Color(
-                        red: 0.13,
-                        green: 0.13,
-                        blue: 0.15
-                    )
+                    BeastColors.surface
                 )
 
             Text(initials)
@@ -319,7 +313,9 @@ struct ScheduleClassCard: View {
                         weight: .bold
                     )
                 )
-                .foregroundStyle(.white)
+                .foregroundStyle(
+                    BeastColors.textPrimary
+                )
         }
     }
 
@@ -449,11 +445,7 @@ struct ScheduleClassCard: View {
             )
 
         case 4:
-            return Color(
-                red: 0.878,
-                green: 0.145,
-                blue: 0.145
-            )
+            return BeastColors.danger
 
         default:
             return Color(
@@ -478,10 +470,10 @@ struct ScheduleClassCard: View {
 
     private var capacityColor: Color {
         if item.isScheduled {
-            return darkButton
+            return BeastColors.border
         }
 
-        return purple
+        return BeastColors.primary
     }
 
     private var isFull: Bool {
@@ -543,46 +535,44 @@ struct ScheduleClassCard: View {
     private var actionButtonColor: Color {
         if item.isScheduled {
             if item.cancelled {
-                return darkButton.opacity(
+                return BeastColors.border.opacity(
                     0.50
                 )
             }
 
             if canCancel {
-                return darkButton
+                return BeastColors.border
             }
 
-            return Color(
-                .secondarySystemBackground
-            )
+            return BeastColors.surface
         }
 
         if item.cancelled {
-            return darkButton.opacity(
+            return BeastColors.border.opacity(
                 0.50
             )
         }
 
         if isFull {
-            return purple
+            return BeastColors.primary
         }
 
-        return purple
+        return BeastColors.primary
     }
 
     private var actionTextColor: Color {
         if item.isScheduled {
             if canCancel {
-                return .white
+                return BeastColors.textPrimary
             }
 
-            return .secondary
+            return BeastColors.textSecondary
         }
 
         if isFull {
-            return .secondary
+            return BeastColors.textSecondary
         }
 
-        return .white
+        return BeastColors.buttonText
     }
 }

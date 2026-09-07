@@ -23,7 +23,7 @@ struct ScheduleView: View {
 
     var body: some View {
         ZStack {
-            Color("BeastBackground")
+            BeastColors.background
                 .ignoresSafeArea()
 
             ScrollView(

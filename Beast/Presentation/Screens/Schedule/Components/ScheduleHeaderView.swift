@@ -3,12 +3,6 @@ import SwiftUI
 struct ScheduleHeaderView: View {
     let date: Date
 
-    private let purple = Color(
-        red: 0.46,
-        green: 0.27,
-        blue: 1.0
-    )
-
     var body: some View {
         HStack(alignment: .center) {
             VStack(
@@ -22,7 +16,9 @@ struct ScheduleHeaderView: View {
                             weight: .bold
                         )
                     )
-                    .foregroundStyle(purple)
+                    .foregroundStyle(
+                        BeastColors.primary
+                    )
 
                 Text("Horarios del mes")
                     .font(
@@ -32,7 +28,9 @@ struct ScheduleHeaderView: View {
                         )
                     )
                     .italic()
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(
+                        BeastColors.textPrimary
+                    )
             }
 
             Spacer()
@@ -40,7 +38,7 @@ struct ScheduleHeaderView: View {
             ZStack {
                 Circle()
                     .fill(
-                        Color(.secondarySystemBackground)
+                        BeastColors.surface
                     )
                     .frame(
                         width: 48,
@@ -54,7 +52,9 @@ struct ScheduleHeaderView: View {
                             weight: .semibold
                         )
                     )
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(
+                        BeastColors.textPrimary
+                    )
             }
         }
         .padding(.horizontal, 24)

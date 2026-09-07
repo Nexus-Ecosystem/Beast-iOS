@@ -3,11 +3,9 @@ import SwiftUI
 struct HomeDateHeader: View {
     private var formattedDate: String {
         let formatter = DateFormatter()
-
         formatter.locale = Locale(
             identifier: "es_MX"
         )
-
         formatter.dateFormat = "d 'de' MMMM 'del' yyyy"
 
         return formatter.string(

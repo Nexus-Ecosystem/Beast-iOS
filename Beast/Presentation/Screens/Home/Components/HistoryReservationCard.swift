@@ -4,25 +4,21 @@ struct HistoryReservationCard: View {
     let reservation: ClassItemEntity
 
     var body: some View {
-        HStack(
-            spacing: 14
-        ) {
+        HStack(spacing: 14) {
             coachImage
 
-            VStack(
-                alignment: .leading,
-                spacing: 4
-            ) {
-                Text(
-                    reservation.name
-                )
-                .font(
-                    .system(
-                        size: 14,
-                        weight: .bold
+            VStack(alignment: .leading, spacing: 4) {
+                Text(reservation.name)
+                    .font(
+                        .system(
+                            size: 14,
+                            weight: .bold
+                        )
                     )
-                )
-                .lineLimit(1)
+                    .foregroundStyle(
+                        BeastColors.textPrimary
+                    )
+                    .lineLimit(1)
 
                 Text(
                     "\(reservation.diaAgendado)\n• Coach \(reservation.coach)"
@@ -33,17 +29,14 @@ struct HistoryReservationCard: View {
                     )
                 )
                 .foregroundStyle(
-                    .secondary
+                    BeastColors.textSecondary
                 )
                 .lineLimit(2)
             }
 
             Spacer()
 
-            VStack(
-                alignment: .trailing,
-                spacing: 6
-            ) {
+            VStack(alignment: .trailing, spacing: 6) {
                 Text(
                     reservation.cancelled
                     ? "Cancelada"
@@ -58,57 +51,50 @@ struct HistoryReservationCard: View {
                 .foregroundStyle(
                     reservation.cancelled
                     ? Color.white
-                    : Color.black
+                    : BeastColors.buttonText
                 )
-                .padding(
-                    .horizontal,
-                    10
-                )
-                .padding(
-                    .vertical,
-                    5
-                )
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
                 .background(
                     RoundedRectangle(
                         cornerRadius: 8
                     )
                     .fill(
                         reservation.cancelled
-                        ? Color.red
-                        : Color.green
+                        ? BeastColors.danger
+                        : BeastColors.success
                     )
                 )
 
-                Text(
-                    reservation.time
-                )
-                .font(
-                    .system(
-                        size: 15,
-                        weight: .bold
+                Text(reservation.time)
+                    .font(
+                        .system(
+                            size: 15,
+                            weight: .bold
+                        )
                     )
-                )
-                .foregroundStyle(
-                    .secondary
-                )
+                    .foregroundStyle(
+                        BeastColors.textSecondary
+                    )
             }
         }
-        .padding(
-            .horizontal,
-            18
-        )
-        .padding(
-            .vertical,
-            14
-        )
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
         .background(
             RoundedRectangle(
                 cornerRadius: 22
             )
             .fill(
-                Color(
-                    .secondarySystemBackground
-                )
+                BeastColors.surface
+            )
+        )
+        .overlay(
+            RoundedRectangle(
+                cornerRadius: 22
+            )
+            .stroke(
+                BeastColors.border,
+                lineWidth: 1
             )
         )
     }
@@ -147,7 +133,7 @@ struct HistoryReservationCard: View {
         ZStack {
             Circle()
                 .fill(
-                    Color.primary
+                    BeastColors.primary
                 )
 
             Text(initials)
@@ -158,9 +144,7 @@ struct HistoryReservationCard: View {
                     )
                 )
                 .foregroundStyle(
-                    Color(
-                        .systemBackground
-                    )
+                    BeastColors.buttonText
                 )
         }
     }

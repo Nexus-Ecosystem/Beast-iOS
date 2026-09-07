@@ -11,6 +11,7 @@ enum BeastColors {
     static let accent = Color("BeastAccent")
     static let primary = Color("BeastAccent")
     static let danger = Color("BeastDanger")
+    static let success = Color("BeastSuccess")
     static let yellowPrimary = Color("BeastYellowPrimary")
     static let yellowAccent = Color("BeastYellowAccent")
     static let tabBackground = Color("BeastTabBackground")

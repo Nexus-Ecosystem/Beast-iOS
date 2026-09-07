@@ -3,12 +3,6 @@ import SwiftUI
 struct UpcomingReservationCard: View {
     let reservation: ClassItemEntity
 
-    private let purple = Color(
-        red: 0.46,
-        green: 0.27,
-        blue: 1.0
-    )
-
     var body: some View {
         VStack(
             alignment: .leading,
@@ -35,7 +29,7 @@ struct UpcomingReservationCard: View {
                         )
                     )
                     .foregroundStyle(
-                        purple
+                        BeastColors.primary
                     )
 
                     Text(
@@ -48,7 +42,7 @@ struct UpcomingReservationCard: View {
                         )
                     )
                     .foregroundStyle(
-                        purple
+                        BeastColors.primary
                     )
                 }
 
@@ -63,7 +57,9 @@ struct UpcomingReservationCard: View {
                         size: 12
                     )
                 )
-                .foregroundStyle(.secondary)
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
 
             Text(reservation.name)
                 .font(
@@ -73,6 +69,9 @@ struct UpcomingReservationCard: View {
                     )
                 )
                 .italic()
+                .foregroundStyle(
+                    BeastColors.textPrimary
+                )
 
             HStack(
                 spacing: 12
@@ -97,7 +96,9 @@ struct UpcomingReservationCard: View {
                             weight: .bold
                         )
                     )
-                    .foregroundStyle(.white)
+                    .foregroundStyle(
+                        BeastColors.buttonText
+                    )
                     .frame(
                         maxWidth: .infinity
                     )
@@ -106,7 +107,9 @@ struct UpcomingReservationCard: View {
                     )
                     .background(
                         Capsule()
-                            .fill(purple)
+                            .fill(
+                                BeastColors.primary
+                            )
                     )
             }
             .buttonStyle(.plain)
@@ -117,9 +120,16 @@ struct UpcomingReservationCard: View {
                 cornerRadius: 28
             )
             .fill(
-                Color(
-                    .secondarySystemBackground
-                )
+                BeastColors.surface
+            )
+        )
+        .overlay(
+            RoundedRectangle(
+                cornerRadius: 28
+            )
+            .stroke(
+                BeastColors.border,
+                lineWidth: 1
             )
         )
     }
@@ -158,9 +168,7 @@ struct UpcomingReservationCard: View {
         ZStack {
             Circle()
                 .fill(
-                    Color(
-                        .tertiarySystemBackground
-                    )
+                    BeastColors.background
                 )
 
             Text(initials)
@@ -169,6 +177,9 @@ struct UpcomingReservationCard: View {
                         size: 14,
                         weight: .bold
                     )
+                )
+                .foregroundStyle(
+                    BeastColors.textPrimary
                 )
         }
     }
@@ -196,10 +207,13 @@ struct UpcomingReservationCard: View {
                 systemName: icon
             )
             .foregroundStyle(
-                purple
+                BeastColors.primary
             )
 
             Text(text)
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
                 .lineLimit(1)
         }
         .font(
