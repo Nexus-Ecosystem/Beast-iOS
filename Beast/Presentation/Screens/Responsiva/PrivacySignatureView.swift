@@ -12,6 +12,9 @@ struct PrivacySignatureView: View {
     private var canvasView =
         PKCanvasView()
 
+    @State
+    private var isSigning = false
+
     var onSignatureComplete:
         () -> Void = {}
 
@@ -69,6 +72,9 @@ struct PrivacySignatureView: View {
                         16
                     )
                 }
+                .scrollDisabled(
+                    isSigning
+                )
             }
 
             if viewModel.isLoading {
@@ -272,7 +278,9 @@ struct PrivacySignatureView: View {
 
             SignaturePadView(
                 canvasView:
-                    $canvasView
+                    $canvasView,
+                isSigning:
+                    $isSigning
             )
             .frame(
                 height: 180

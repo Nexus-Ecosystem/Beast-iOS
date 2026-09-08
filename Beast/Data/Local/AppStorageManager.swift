@@ -1,15 +1,22 @@
 import Foundation
 
 extension Notification.Name {
-    static let sessionDidChange = Notification.Name("beast.sessionDidChange")
+    static let sessionDidChange =
+        Notification.Name(
+            "beast.sessionDidChange"
+        )
 }
 
 final class AppStorageManager {
-    static let shared = AppStorageManager()
+    static let shared =
+        AppStorageManager()
 
     private enum Keys {
-        static let isLoggedIn = "beast.isLoggedIn"
-        static let profile = "beast.profile"
+        static let isLoggedIn =
+            "beast.isLoggedIn"
+
+        static let profile =
+            "beast.profile"
     }
 
     private let userDefaults: UserDefaults
@@ -28,10 +35,16 @@ final class AppStorageManager {
 
     var isLoggedIn: Bool {
         get {
-            userDefaults.bool(forKey: Keys.isLoggedIn)
+            userDefaults.bool(
+                forKey: Keys.isLoggedIn
+            )
         }
+
         set {
-            userDefaults.set(newValue, forKey: Keys.isLoggedIn)
+            userDefaults.set(
+                newValue,
+                forKey: Keys.isLoggedIn
+            )
 
             NotificationCenter.default.post(
                 name: .sessionDidChange,
@@ -40,17 +53,69 @@ final class AppStorageManager {
         }
     }
 
-    func saveProfile(_ profile: AllDataProfileUserSystem) {
+    func saveLoginSession(
+        _ incomingProfile: AllDataProfileUserSystem
+    ) {
+        var profileToSave =
+            incomingProfile
+
+        if incomingProfile.branches.isEmpty,
+           let currentProfile = getProfile(),
+           currentProfile.email
+                .caseInsensitiveCompare(
+                    incomingProfile.email
+                ) == .orderedSame,
+           !currentProfile.branches.isEmpty {
+
+            profileToSave =
+                incomingProfile.withBranches(
+                    currentProfile.branches
+                )
+        }
+
+        saveProfile(
+            profileToSave
+        )
+
+        userDefaults.set(
+            true,
+            forKey: Keys.isLoggedIn
+        )
+
+        NotificationCenter.default.post(
+            name: .sessionDidChange,
+            object: nil
+        )
+    }
+
+    func saveProfile(
+        _ profile: AllDataProfileUserSystem
+    ) {
         do {
-            let data = try encoder.encode(profile)
-            userDefaults.set(data, forKey: Keys.profile)
+            let data =
+                try encoder.encode(
+                    profile
+                )
+
+            userDefaults.set(
+                data,
+                forKey: Keys.profile
+            )
         } catch {
-            print("Error saving profile: \(error)")
+            print(
+                "Error saving profile: \(error)"
+            )
         }
     }
 
-    func getProfile() -> AllDataProfileUserSystem? {
-        guard let data = userDefaults.data(forKey: Keys.profile) else {
+    func getProfile()
+        -> AllDataProfileUserSystem?
+    {
+        guard let data =
+            userDefaults.data(
+                forKey: Keys.profile
+            )
+        else {
             return nil
         }
 
@@ -60,18 +125,29 @@ final class AppStorageManager {
                 from: data
             )
         } catch {
-            print("Error loading profile: \(error)")
+            print(
+                "Error loading profile: \(error)"
+            )
+
             return nil
         }
     }
 
     func clearProfile() {
-        userDefaults.removeObject(forKey: Keys.profile)
+        userDefaults.removeObject(
+            forKey: Keys.profile
+        )
     }
 
     func clearSession() {
-        userDefaults.set(false, forKey: Keys.isLoggedIn)
-        userDefaults.removeObject(forKey: Keys.profile)
+        userDefaults.set(
+            false,
+            forKey: Keys.isLoggedIn
+        )
+
+        userDefaults.removeObject(
+            forKey: Keys.profile
+        )
 
         NotificationCenter.default.post(
             name: .sessionDidChange,

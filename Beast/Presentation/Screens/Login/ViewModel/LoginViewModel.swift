@@ -11,19 +11,30 @@ final class LoginViewModel: ObservableObject {
     @Published var loginSucceeded: Bool = false
 
     private let loginUserUseCase: LoginUserUseCase
+    private let storage: AppStorageManager
 
-    init(loginUserUseCase: LoginUserUseCase = LoginUserUseCase()) {
+    init(
+        loginUserUseCase: LoginUserUseCase = LoginUserUseCase(),
+        storage: AppStorageManager = .shared
+    ) {
         self.loginUserUseCase = loginUserUseCase
+        self.storage = storage
     }
 
     var isLoginEnabled: Bool {
-        !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !email
+            .trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
+            .isEmpty &&
         !password.isEmpty &&
         !isLoading
     }
 
     func login() async {
-        guard isLoginEnabled else { return }
+        guard isLoginEnabled else {
+            return
+        }
 
         isLoading = true
         errorMessage = nil
@@ -34,22 +45,29 @@ final class LoginViewModel: ObservableObject {
         }
 
         do {
+            let cleanEmail = email
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                )
+
             let response = try await loginUserUseCase.execute(
-                email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                email: cleanEmail,
                 password: password,
                 tokenFirebase: ""
             )
 
             let profile = response.toDomain()
 
-            AppStorageManager.shared.saveProfile(profile)
-            AppStorageManager.shared.isLoggedIn = true
+            storage.saveLoginSession(
+                profile
+            )
 
             loginSucceeded = true
         } catch let error as AuthError {
             errorMessage = error.localizedDescription
         } catch {
-            errorMessage = "Ocurrió un error al iniciar sesión."
+            errorMessage =
+                "Ocurrió un error al iniciar sesión."
         }
     }
 

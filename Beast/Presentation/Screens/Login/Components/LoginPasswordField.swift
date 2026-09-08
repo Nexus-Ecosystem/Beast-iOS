@@ -62,7 +62,7 @@ struct LoginPasswordField: View {
                         Text(placeholder)
                             .font(
                                 .system(
-                                    size: 14,
+                                    size: 16,
                                     weight: .regular
                                 )
                             )
@@ -86,7 +86,7 @@ struct LoginPasswordField: View {
                     }
                     .font(
                         .system(
-                            size: 14,
+                            size: 16,
                             weight: .regular
                         )
                     )
