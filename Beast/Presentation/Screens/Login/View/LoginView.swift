@@ -16,91 +16,154 @@ struct LoginView: View {
             ZStack {
                 LoginBackgroundView()
 
-                VStack(alignment: .leading, spacing: 0) {
-                    LoginHeaderView()
-
-                    Spacer()
-                        .frame(height: 30)
-
-                    LoginTextField(
-                        title: "CORREO ELECTRÓNICO",
-                        placeholder: "nombre@ejemplo.com",
-                        text: $viewModel.email
-                    )
-                    .focused($focusedField, equals: .email)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.emailAddress)
-                    .autocorrectionDisabled()
-
-                    Spacer()
-                        .frame(height: 14)
-
-                    LoginPasswordField(
-                        title: "CONTRASEÑA",
-                        placeholder: "Contraseña",
-                        password: $viewModel.password,
-                        isVisible: $viewModel.isPasswordVisible
-                    )
-                    .focused($focusedField, equals: .password)
-
-                    Button {
-                        hideKeyboard()
-                        focusedField = nil
-                    } label: {
-                        Text("¿Olvidaste tu contraseña?")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(BeastColors.primary)
-                    }
-                    .buttonStyle(.plain)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .padding(.top, 10)
-
-                    Spacer()
-                        .frame(height: 18)
-
-                    LoginButton(
-                        isEnabled: viewModel.isLoginEnabled,
-                        isLoading: viewModel.isLoading
+                ScrollView(
+                    showsIndicators: false
+                ) {
+                    VStack(
+                        alignment: .leading,
+                        spacing: 0
                     ) {
-                        hideKeyboard()
-                        focusedField = nil
+                        LoginHeaderView()
 
-                        Task {
-                            await viewModel.login()
+                        Spacer()
+                            .frame(height: 30)
+
+                        LoginTextField(
+                            title: "CORREO ELECTRÓNICO",
+                            placeholder: "nombre@ejemplo.com",
+                            text: $viewModel.email
+                        )
+                        .focused(
+                            $focusedField,
+                            equals: .email
+                        )
+                        .textInputAutocapitalization(
+                            .never
+                        )
+                        .keyboardType(
+                            .emailAddress
+                        )
+                        .autocorrectionDisabled()
+
+                        Spacer()
+                            .frame(height: 14)
+
+                        LoginPasswordField(
+                            title: "CONTRASEÑA",
+                            placeholder: "Contraseña",
+                            password: $viewModel.password,
+                            isVisible: $viewModel.isPasswordVisible
+                        )
+                        .focused(
+                            $focusedField,
+                            equals: .password
+                        )
+
+                        Button {
+                            hideKeyboard()
+                            focusedField = nil
+                        } label: {
+                            Text(
+                                "¿Olvidaste tu contraseña?"
+                            )
+                            .font(
+                                .system(
+                                    size: 10,
+                                    weight: .bold
+                                )
+                            )
+                            .foregroundStyle(
+                                BeastColors.primary
+                            )
                         }
-                    }
+                        .buttonStyle(.plain)
+                        .frame(
+                            maxWidth: .infinity,
+                            alignment: .trailing
+                        )
+                        .padding(
+                            .top,
+                            10
+                        )
 
-                    Spacer()
-                        .frame(height: 14)
+                        Spacer()
+                            .frame(height: 18)
 
-                    HStack(spacing: 10) {
-                        Rectangle()
-                            .fill(BeastColors.border)
-                            .frame(height: 1)
+                        LoginButton(
+                            isEnabled:
+                                viewModel.isLoginEnabled,
+                            isLoading:
+                                viewModel.isLoading
+                        ) {
+                            hideKeyboard()
+                            focusedField = nil
 
-                        Text("Ó")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(BeastColors.textSecondary)
+                            Task {
+                                await viewModel.login()
+                            }
+                        }
 
-                        Rectangle()
-                            .fill(BeastColors.border)
-                            .frame(height: 1)
-                    }
+                        Spacer()
+                            .frame(height: 14)
 
-                    Spacer()
-                        .frame(height: 14)
+                        HStack(
+                            spacing: 10
+                        ) {
+                            Rectangle()
+                                .fill(
+                                    BeastColors.border
+                                )
+                                .frame(
+                                    height: 1
+                                )
 
-                    Button {
-                        hideKeyboard()
-                        focusedField = nil
-                        showSignUp = true
-                    } label: {
-                        Text("CREAR CUENTA")
-                            .font(.system(size: 12, weight: .bold))
+                            Text("Ó")
+                                .font(
+                                    .system(
+                                        size: 9,
+                                        weight: .medium
+                                    )
+                                )
+                                .foregroundStyle(
+                                    BeastColors.textSecondary
+                                )
+
+                            Rectangle()
+                                .fill(
+                                    BeastColors.border
+                                )
+                                .frame(
+                                    height: 1
+                                )
+                        }
+
+                        Spacer()
+                            .frame(height: 14)
+
+                        Button {
+                            hideKeyboard()
+                            focusedField = nil
+                            showSignUp = true
+                        } label: {
+                            Text(
+                                "CREAR CUENTA"
+                            )
+                            .font(
+                                .system(
+                                    size: 12,
+                                    weight: .bold
+                                )
+                            )
                             .tracking(1)
-                            .foregroundStyle(BeastColors.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
+                            .foregroundStyle(
+                                BeastColors.textPrimary
+                            )
+                            .frame(
+                                maxWidth: .infinity
+                            )
+                            .frame(
+                                height: 48
+                            )
                             .overlay {
                                 Capsule()
                                     .stroke(
@@ -108,43 +171,70 @@ struct LoginView: View {
                                         lineWidth: 1
                                     )
                             }
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+                            .frame(
+                                minHeight: 260
+                            )
+
+                        LoginLegalFooter()
+                            .padding(
+                                .bottom,
+                                8
+                            )
                     }
-                    .buttonStyle(.plain)
-
-                    Spacer()
-
-                    LoginLegalFooter()
-                        .padding(.bottom, 8)
+                    .padding(
+                        .horizontal,
+                        30
+                    )
+                    .padding(
+                        .top,
+                        58
+                    )
+                    .padding(
+                        .bottom,
+                        24
+                    )
+                    .frame(
+                        maxWidth: .infinity,
+                        alignment: .topLeading
+                    )
+                    .contentShape(
+                        Rectangle()
+                    )
+                    .onTapGesture {
+                        hideKeyboard()
+                        focusedField = nil
+                    }
                 }
-                .padding(.horizontal, 30)
-                .padding(.top, 58)
-                .padding(.bottom, 24)
-                .frame(
-                    maxWidth: .infinity,
-                    maxHeight: .infinity,
-                    alignment: .topLeading
+                .scrollDismissesKeyboard(
+                    .interactively
                 )
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    hideKeyboard()
-                    focusedField = nil
-                }
 
-                if let error = viewModel.errorMessage {
+                if let error =
+                    viewModel.errorMessage
+                {
                     BeastAlertDialog(
                         style: .error,
                         title: "¡Aviso!",
-                        message: error.isEmpty
+                        message:
+                            error.isEmpty
                             ? "Alguno de tus datos es incorrecto\nInténtalo de nuevo."
                             : error,
-                        buttonTitle: "Entendido"
+                        buttonTitle:
+                            "Entendido"
                     ) {
                         viewModel.resetError()
                         focusedField = nil
                     }
                     .transition(
                         .opacity.combined(
-                            with: .scale(scale: 0.96)
+                            with:
+                                .scale(
+                                    scale: 0.96
+                                )
                         )
                     )
                     .zIndex(10)
@@ -156,36 +246,47 @@ struct LoginView: View {
                 }
             }
             .navigationDestination(
-                isPresented: $showSignUp
+                isPresented:
+                    $showSignUp
             ) {
                 SignUpView()
             }
             .onChange(
-                of: viewModel.loginSucceeded
+                of:
+                    viewModel.loginSucceeded
             ) { _, succeeded in
                 guard succeeded else {
                     return
                 }
 
-                viewModel.resetLoginSuccess()
+                viewModel
+                    .resetLoginSuccess()
 
-                NotificationCenter.default.post(
-                    name: .sessionDidChange,
-                    object: nil
-                )
+                NotificationCenter
+                    .default
+                    .post(
+                        name:
+                            .sessionDidChange,
+                        object:
+                            nil
+                    )
             }
             .animation(
-                .easeInOut(duration: 0.25),
-                value: viewModel.errorMessage
+                .easeInOut(
+                    duration: 0.25
+                ),
+                value:
+                    viewModel.errorMessage
             )
             .animation(
-                .easeInOut(duration: 0.25),
-                value: viewModel.isLoading
+                .easeInOut(
+                    duration: 0.25
+                ),
+                value:
+                    viewModel.isLoading
             )
-            .navigationBarBackButtonHidden(true)
-            .ignoresSafeArea(
-                .keyboard,
-                edges: .bottom
+            .navigationBarBackButtonHidden(
+                true
             )
         }
     }
