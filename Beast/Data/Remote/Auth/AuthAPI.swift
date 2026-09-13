@@ -1,7 +1,9 @@
 import Foundation
 
 protocol AuthAPIProtocol {
-    func login(request: LoginRequest) async throws -> LoginResponse
+    func login(
+        request: LoginRequest
+    ) async throws -> LoginResponse
 }
 
 final class AuthAPI: AuthAPIProtocol {
@@ -16,7 +18,9 @@ final class AuthAPI: AuthAPIProtocol {
         self.encoder = encoder
     }
 
-    func login(request: LoginRequest) async throws -> LoginResponse {
+    func login(
+        request: LoginRequest
+    ) async throws -> LoginResponse {
         guard let url = URL(
             string: AppConfiguration.serviceURL("login")
         ) else {

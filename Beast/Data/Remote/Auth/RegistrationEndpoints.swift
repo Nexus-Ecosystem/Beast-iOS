@@ -1,23 +1,19 @@
 import Foundation
 
 enum RegistrationEndpoints {
-    private static var baseURL: String {
-        AppConfiguration.baseURL
-    }
-
     static var sendOtp: String {
-        "\(baseURL)/sendOtp"
+        AppConfiguration.serviceURL("sendotp")
     }
 
     static var verifyOtp: String {
-        "\(baseURL)/verifyOtp"
+        AppConfiguration.serviceURL("verifyotp")
     }
 
     static var register: String {
-        "\(baseURL)/register"
+        AppConfiguration.serviceURL("register")
     }
 
     static var subscribeUserToBranch: String {
-        "\(baseURL)/subscribeUserToBranch"
+        AppConfiguration.serviceURL("subscribeusertobranch")
     }
 }

@@ -1,22 +1,14 @@
 import SwiftUI
 
 struct ChangePasswordView: View {
-    @StateObject
-    private var viewModel: ChangePasswordViewModel
+    @StateObject private var viewModel: ChangePasswordViewModel
 
-    @State
-    private var passwordVisible = false
+    @State private var passwordVisible = false
+    @State private var confirmPasswordVisible = false
 
-    @State
-    private var confirmPasswordVisible = false
-
-    init(
-        email: String
-    ) {
+    init(email: String) {
         _viewModel = StateObject(
-            wrappedValue: ChangePasswordViewModel(
-                email: email
-            )
+            wrappedValue: ChangePasswordViewModel(email: email)
         )
     }
 
@@ -25,40 +17,20 @@ struct ChangePasswordView: View {
             BeastColors.background
                 .ignoresSafeArea()
 
-            ScrollView(
-                showsIndicators: false
-            ) {
-                VStack(
-                    alignment: .leading,
-                    spacing: 0
-                ) {
-                    Text(
-                        "DEFINE TU NUEVA\nIDENTIDAD DIGITAL."
-                    )
-                    .font(
-                        .system(
-                            size: 29,
-                            weight: .black
-                        )
-                    )
-                    .italic()
-                    .foregroundStyle(
-                        BeastColors.textPrimary
-                    )
-                    .padding(
-                        .top,
-                        12
-                    )
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("DEFINE TU NUEVA\nIDENTIDAD DIGITAL.")
+                        .font(.system(size: 29, weight: .black))
+                        .italic()
+                        .foregroundStyle(BeastColors.textPrimary)
+                        .padding(.top, 18)
 
                     BeastPasswordField(
                         title: "NUEVA CONTRASEÑA",
                         text: $viewModel.password,
                         isVisible: $passwordVisible
                     )
-                    .padding(
-                        .top,
-                        30
-                    )
+                    .padding(.top, 30)
 
                     PasswordStrengthCard(
                         progress: viewModel.strengthProgress,
@@ -68,67 +40,37 @@ struct ChangePasswordView: View {
                         hasSpecialCharacter: viewModel.hasSpecialCharacter,
                         hasMinLength: viewModel.hasMinLength
                     )
-                    .padding(
-                        .top,
-                        24
-                    )
+                    .padding(.top, 24)
 
                     BeastPasswordField(
                         title: "CONFIRMAR CONTRASEÑA",
                         text: $viewModel.confirmPassword,
                         isVisible: $confirmPasswordVisible
                     )
-                    .padding(
-                        .top,
-                        30
-                    )
+                    .padding(.top, 30)
 
                     Spacer()
-                        .frame(
-                            minHeight: 80
-                        )
+                        .frame(minHeight: 80)
 
                     changePasswordButton
                 }
-                .padding(
-                    .horizontal,
-                    24
-                )
-                .padding(
-                    .bottom,
-                    24
-                )
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
             }
 
             if viewModel.isLoading {
                 BeastLoadingOverlay()
+                    .zIndex(1000)
             }
         }
-        .navigationTitle(
-            "Cambia tu contraseña"
-        )
-        .navigationBarTitleDisplayMode(
-            .inline
-        )
-        .toolbarBackground(
-            BeastColors.background,
-            for: .navigationBar
-        )
-        .toolbarBackground(
-            .visible,
-            for: .navigationBar
-        )
-        .toolbar(
-            .hidden,
-            for: .tabBar
-        )
+        .navigationTitle("Cambia tu contraseña")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .alert(
             "¡Felicidades!",
             isPresented: $viewModel.showSuccess
         ) {
-            Button(
-                "Entendido"
-            ) {
+            Button("Entendido") {
                 viewModel.confirmSuccess()
             }
         } message: {
@@ -140,15 +82,11 @@ struct ChangePasswordView: View {
             "No fue posible continuar",
             isPresented: $viewModel.showError
         ) {
-            Button(
-                "Entendido"
-            ) {
+            Button("Entendido") {
                 viewModel.closeError()
             }
         } message: {
-            Text(
-                viewModel.errorMessage
-            )
+            Text(viewModel.errorMessage)
         }
     }
 
@@ -158,54 +96,26 @@ struct ChangePasswordView: View {
                 await viewModel.changePassword()
             }
         } label: {
-            HStack(
-                spacing: 8
-            ) {
-                Text(
-                    "CAMBIAR CONTRASEÑA"
-                )
-                .font(
-                    .system(
-                        size: 12,
-                        weight: .black
-                    )
-                )
+            HStack(spacing: 8) {
+                Text("CAMBIAR CONTRASEÑA")
+                    .font(.system(size: 12, weight: .black))
 
-                Image(
-                    systemName: "bolt.fill"
-                )
-                .font(
-                    .system(
-                        size: 14,
-                        weight: .black
-                    )
-                )
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 14, weight: .black))
             }
-            .foregroundStyle(
-                BeastColors.buttonText
-            )
-            .frame(
-                maxWidth: .infinity
-            )
-            .frame(
-                height: 58
-            )
+            .foregroundStyle(BeastColors.buttonText)
+            .frame(maxWidth: .infinity)
+            .frame(height: 58)
             .background(
                 Capsule()
                     .fill(
                         BeastColors.primary.opacity(
-                            viewModel.canSubmit
-                            ? 1
-                            : 0.45
+                            viewModel.canSubmit ? 1 : 0.45
                         )
                     )
             )
         }
-        .buttonStyle(
-            .plain
-        )
-        .disabled(
-            !viewModel.canSubmit
-        )
+        .buttonStyle(.plain)
+        .disabled(!viewModel.canSubmit)
     }
 }

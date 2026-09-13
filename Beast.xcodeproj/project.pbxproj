@@ -28,7 +28,6 @@
 		0BB1690C304F4A470076D367 /* Exceptions for "Beast" folder in "Beast" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Data/Repositories/Untitled.swift,
 				Info.plist,
 			);
 			target = 0B9107D32F27EA4900B9196A /* Beast */;
