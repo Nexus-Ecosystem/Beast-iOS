@@ -7,75 +7,48 @@ struct BeastPasswordField: View {
     @Binding var isVisible: Bool
 
     var body: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 10
-        ) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(
-                    .system(
-                        size: 10,
-                        weight: .black
-                    )
-                )
-                .foregroundStyle(
-                    BeastColors.primary
-                )
+                .font(.system(size: 10, weight: .black))
+                .foregroundStyle(BeastColors.primary)
 
-            HStack(
-                spacing: 12
-            ) {
+            HStack(spacing: 12) {
                 Group {
                     if isVisible {
                         TextField(
                             "",
                             text: $text,
-                            prompt:
-                                Text("••••••••")
+                            prompt: Text("••••••••")
                                 .foregroundStyle(
-                                    Color.gray.opacity(0.7)
+                                    BeastColors.textSecondary.opacity(0.7)
                                 )
                         )
                     } else {
                         SecureField(
                             "",
                             text: $text,
-                            prompt:
-                                Text("••••••••")
+                            prompt: Text("••••••••")
                                 .foregroundStyle(
-                                    Color.gray.opacity(0.7)
+                                    BeastColors.textSecondary.opacity(0.7)
                                 )
                         )
                     }
                 }
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
-                .foregroundStyle(Color.black)
-                .font(
-                    .system(
-                        size: 15,
-                        weight: .medium
-                    )
-                )
+                .foregroundStyle(BeastColors.textPrimary)
+                .font(.system(size: 15, weight: .medium))
 
                 Button {
                     isVisible.toggle()
                 } label: {
                     Image(
-                        systemName:
-                            isVisible
-                            ? "eye.fill"
-                            : "eye.slash.fill"
+                        systemName: isVisible
+                        ? "eye.fill"
+                        : "eye.slash.fill"
                     )
-                    .font(
-                        .system(
-                            size: 16,
-                            weight: .semibold
-                        )
-                    )
-                    .foregroundStyle(
-                        Color.gray
-                    )
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(BeastColors.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -83,7 +56,7 @@ struct BeastPasswordField: View {
             .frame(height: 48)
             .background(
                 Capsule()
-                    .fill(Color.white)
+                    .fill(BeastColors.surface)
             )
         }
     }

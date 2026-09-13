@@ -18,73 +18,139 @@ final class PackagesViewModel: ObservableObject {
         schedulesUseCase: SchedulesUseCase = SchedulesUseCase(),
         storage: AppStorageManager = .shared
     ) {
-        self.schedulesUseCase = schedulesUseCase
-        self.storage = storage
+        self.schedulesUseCase =
+            schedulesUseCase
+        self.storage =
+            storage
     }
 
     var userName: String {
         profile?.fullName ?? ""
     }
 
+    var activePackageId: String {
+        profile?.activePackage.idPaquete ?? ""
+    }
+
+    var hasActivePackage: Bool {
+        guard !activePackageId.isEmpty else {
+            return false
+        }
+
+        return packages.contains {
+            $0.idPaquete == activePackageId
+        }
+    }
+
+    var featuredPackage: PaqueteMemberShipModel? {
+        if !activePackageId.isEmpty,
+           let activePackage =
+            packages.first(
+                where: {
+                    $0.idPaquete ==
+                    activePackageId
+                }
+            )
+        {
+            return activePackage
+        }
+
+        return packages.first
+    }
+
+    var otherPackages: [PaqueteMemberShipModel] {
+        guard let featuredPackage else {
+            return []
+        }
+
+        return packages.filter {
+            $0.idPaquete !=
+            featuredPackage.idPaquete
+        }
+    }
+
     func load() async {
         isLoading = true
         errorMessage = nil
 
-        profile = storage.getProfile()
+        profile =
+            storage.getProfile()
 
         guard let profile else {
             isLoading = false
-            errorMessage = "No se encontró la información del usuario."
+            errorMessage =
+                "No se encontró la información del usuario."
             return
         }
 
-        guard let branch = profile.branches.first else {
+        guard let branch =
+            profile.branches.first
+        else {
             isLoading = false
-            errorMessage = "No se encontró una sucursal asociada."
+            errorMessage =
+                "No se encontró una sucursal asociada."
             return
         }
 
-        packages = await schedulesUseCase.memberships(
-            branch: branch
-        )
-
-        sortPackages()
+        packages =
+            await schedulesUseCase
+                .memberships(
+                    branch: branch
+                )
 
         isLoading = false
     }
 
     func refresh() async {
+        profile =
+            storage.getProfile()
+
         guard
             let profile,
-            let branch = profile.branches.first
+            let branch =
+                profile.branches.first
         else {
             return
         }
 
-        packages = await schedulesUseCase.memberships(
-            branch: branch
-        )
-
-        sortPackages()
+        packages =
+            await schedulesUseCase
+                .memberships(
+                    branch: branch
+                )
     }
 
     func selectPackage(
         _ package: PaqueteMemberShipModel
     ) {
-        selectedPackage = package
-        showPurchaseConfirmation = true
+        guard canBuy(package) else {
+            return
+        }
+
+        selectedPackage =
+            package
+
+        showPurchaseConfirmation =
+            true
     }
 
     func dismissPurchaseConfirmation() {
-        showPurchaseConfirmation = false
-        selectedPackage = nil
+        showPurchaseConfirmation =
+            false
+
+        selectedPackage =
+            nil
     }
 
     func isActive(
         _ package: PaqueteMemberShipModel
     ) -> Bool {
-        profile?.activePackage.idPaquete ==
-        package.idPaquete
+        guard !activePackageId.isEmpty else {
+            return false
+        }
+
+        return activePackageId ==
+            package.idPaquete
     }
 
     func isPackageEmpty(
@@ -97,7 +163,8 @@ final class PackagesViewModel: ObservableObject {
             return false
         }
 
-        let activePackage = profile.activePackage
+        let activePackage =
+            profile.activePackage
 
         guard activePackage.tipoPaquete == 2 else {
             return false
@@ -124,17 +191,26 @@ final class PackagesViewModel: ObservableObject {
             return false
         }
 
-        guard let date = Self.dateFormatter.date(
-            from: expiration
-        ) else {
+        guard let expirationDate =
+            Self.dateFormatter.date(
+                from: expiration
+            )
+        else {
             return false
         }
 
-        return Calendar.current.startOfDay(
-            for: Date()
-        ) > Calendar.current.startOfDay(
-            for: date
-        )
+        let today =
+            Calendar.current.startOfDay(
+                for: Date()
+            )
+
+        let expirationDay =
+            Calendar.current.startOfDay(
+                for: expirationDate
+            )
+
+        return today >
+            expirationDay
     }
 
     func canBuy(
@@ -158,7 +234,7 @@ final class PackagesViewModel: ObservableObject {
     func actionTitle(
         for package: PaqueteMemberShipModel
     ) -> String {
-        if !isActive(package) {
+        guard isActive(package) else {
             return "ADQUIRIR"
         }
 
@@ -174,40 +250,23 @@ final class PackagesViewModel: ObservableObject {
     }
 
     func resetError() {
-        errorMessage = nil
-    }
-
-    private func sortPackages() {
-        guard let profile else {
-            return
-        }
-
-        let activeId =
-            profile.activePackage.idPaquete
-
-        guard !activeId.isEmpty else {
-            return
-        }
-
-        packages.sort {
-            if $0.idPaquete == activeId {
-                return true
-            }
-
-            if $1.idPaquete == activeId {
-                return false
-            }
-
-            return false
-        }
+        errorMessage =
+            nil
     }
 
     private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(
-            identifier: "en_US_POSIX"
-        )
-        formatter.dateFormat = "yyyy-MM-dd"
+        let formatter =
+            DateFormatter()
+
+        formatter.locale =
+            Locale(
+                identifier:
+                    "en_US_POSIX"
+            )
+
+        formatter.dateFormat =
+            "yyyy-MM-dd"
+
         return formatter
     }()
 }

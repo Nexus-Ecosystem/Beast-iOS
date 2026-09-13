@@ -11,53 +11,52 @@ final class ChangePasswordRemoteDataSource:
 {
     private let session: URLSession
 
-    private let endpoint =
-        "https://changepassword-rdotx3vmaq-uc.a.run.app"
+    private var endpoint: String {
+        AppConfiguration.serviceURL("changepassword")
+    }
 
-    init(
-        session: URLSession = .shared
-    ) {
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
     func changePassword(
         request: ChangePasswordRequest
     ) async throws -> ChangePasswordResponse {
+        guard let encryptedPassword = CryptoManager.encryptString(
+            request.newPassword
+        ) else {
+            throw ChangePasswordRemoteError.encryptionFailed
+        }
+
+        let encryptedRequest = ChangePasswordRequest(
+            email: request.email,
+            newPassword: encryptedPassword
+        )
+
         guard let url = URL(string: endpoint) else {
             throw ChangePasswordRemoteError.invalidURL
         }
 
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Content-Type"
         )
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Accept"
         )
+        urlRequest.httpBody = try JSONEncoder().encode(encryptedRequest)
 
-        urlRequest.httpBody = try JSONEncoder().encode(
-            request
-        )
-
-        NetworkLogger.logRequest(
-            urlRequest
-        )
+        NetworkLogger.logRequest(urlRequest)
 
         let startTime = Date()
 
         do {
-            let (data, response) = try await session.data(
-                for: urlRequest
-            )
+            let (data, response) = try await session.data(for: urlRequest)
 
-            guard let httpResponse =
-                response as? HTTPURLResponse
-            else {
+            guard let httpResponse = response as? HTTPURLResponse else {
                 throw ChangePasswordRemoteError.invalidResponse
             }
 
@@ -69,17 +68,14 @@ final class ChangePasswordRemoteDataSource:
             )
 
             guard 200..<300 ~= httpResponse.statusCode else {
-                let backendResponse =
-                    try? JSONDecoder().decode(
-                        ChangePasswordResponse.self,
-                        from: data
-                    )
+                let backendResponse = try? JSONDecoder().decode(
+                    ChangePasswordResponse.self,
+                    from: data
+                )
 
                 if let error = backendResponse?.error,
                    !error.isEmpty {
-                    throw ChangePasswordRemoteError.backendError(
-                        error
-                    )
+                    throw ChangePasswordRemoteError.backendError(error)
                 }
 
                 throw ChangePasswordRemoteError.httpError(
@@ -108,11 +104,10 @@ final class ChangePasswordRemoteDataSource:
     }
 }
 
-enum ChangePasswordRemoteError:
-    LocalizedError
-{
+enum ChangePasswordRemoteError: LocalizedError {
     case invalidURL
     case invalidResponse
+    case encryptionFailed
     case httpError(Int)
     case backendError(String)
     case decodingError(String)
@@ -124,6 +119,9 @@ enum ChangePasswordRemoteError:
 
         case .invalidResponse:
             return "La respuesta del servidor no es válida."
+
+        case .encryptionFailed:
+            return "No fue posible proteger la nueva contraseña."
 
         case let .httpError(code):
             return "No fue posible cambiar la contraseña. Código \(code)."

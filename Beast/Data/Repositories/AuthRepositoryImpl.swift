@@ -12,12 +12,30 @@ final class AuthRepositoryImpl: AuthRepository {
         password: String,
         tokenFirebase: String
     ) async throws -> LoginResponse {
+        guard
+            let encryptedEmail = CryptoManager.encryptString(email),
+            let encryptedPassword = CryptoManager.encryptString(password)
+        else {
+            throw AuthRepositoryError.encryptionFailed
+        }
+
         let request = LoginRequest(
-            email: email,
-            password: password,
+            email: encryptedEmail,
+            password: encryptedPassword,
             tokenFirebase: tokenFirebase
         )
 
         return try await api.login(request: request)
+    }
+}
+
+enum AuthRepositoryError: LocalizedError {
+    case encryptionFailed
+
+    var errorDescription: String? {
+        switch self {
+        case .encryptionFailed:
+            return "No fue posible proteger las credenciales."
+        }
     }
 }

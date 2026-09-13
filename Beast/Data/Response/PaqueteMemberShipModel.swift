@@ -8,6 +8,7 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
     let precioDescuento: Double
     let beneficios: [String]
     let tipoPaquete: Int
+    let imagePlan: String
 
     var id: String {
         idPaquete
@@ -20,7 +21,8 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
         precioRegular: Double = 0,
         precioDescuento: Double = 0,
         beneficios: [String] = [],
-        tipoPaquete: Int = 0
+        tipoPaquete: Int = 0,
+        imagePlan: String = ""
     ) {
         self.idPaquete = idPaquete
         self.name = name
@@ -29,6 +31,7 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
         self.precioDescuento = precioDescuento
         self.beneficios = beneficios
         self.tipoPaquete = tipoPaquete
+        self.imagePlan = imagePlan
     }
 
     enum CodingKeys: String, CodingKey {
@@ -39,5 +42,6 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
         case precioDescuento
         case beneficios
         case tipoPaquete
+        case imagePlan
     }
 }

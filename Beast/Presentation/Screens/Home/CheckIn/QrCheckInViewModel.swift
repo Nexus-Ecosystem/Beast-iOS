@@ -12,9 +12,7 @@ final class QrCheckInViewModel: ObservableObject {
     private let storage: AppStorageManager
     private let refreshInterval = 105
 
-    init(
-        storage: AppStorageManager = .shared
-    ) {
+    init(storage: AppStorageManager = .shared) {
         self.storage = storage
     }
 
@@ -40,7 +38,6 @@ final class QrCheckInViewModel: ObservableObject {
         }
 
         self.profile = profile
-
         generateQRCode()
     }
 
@@ -49,9 +46,7 @@ final class QrCheckInViewModel: ObservableObject {
 
         while !Task.isCancelled {
             do {
-                try await Task.sleep(
-                    for: .seconds(1)
-                )
+                try await Task.sleep(for: .seconds(1))
             } catch {
                 return
             }
@@ -90,7 +85,7 @@ final class QrCheckInViewModel: ObservableObject {
         ]
         .joined(separator: "/")
 
-        guard let encryptedData = CryptoManager.encrypt(
+        guard let encryptedData = CryptoManager.encryptString(
             qrDataString
         ) else {
             errorMessage = "No fue posible generar el código QR."
@@ -102,6 +97,7 @@ final class QrCheckInViewModel: ObservableObject {
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         print("🔐 QR CHECK-IN")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("Plain payload: \(qrDataString)")
         print("Encrypted payload: \(encryptedData)")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         print("")

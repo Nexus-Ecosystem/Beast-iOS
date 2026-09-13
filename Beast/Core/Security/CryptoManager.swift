@@ -4,25 +4,23 @@ import CommonCrypto
 enum CryptoManager {
     private static let key = "1234567890123456"
 
-    static func encrypt(_ data: String) -> String? {
+    static func encryptString(_ value: String) -> String? {
         guard
-            let dataToEncrypt = data.data(using: .utf8),
+            let data = value.data(using: .utf8),
             let keyData = key.data(using: .utf8)
         else {
             return nil
         }
 
-        let outputBufferSize =
-            dataToEncrypt.count + kCCBlockSizeAES128
-
         var encryptedData = Data(
-            count: outputBufferSize
+            count: data.count + kCCBlockSizeAES128
         )
 
+        let outputLength = encryptedData.count
         var encryptedLength: size_t = 0
 
         let status = encryptedData.withUnsafeMutableBytes { encryptedBytes in
-            dataToEncrypt.withUnsafeBytes { dataBytes in
+            data.withUnsafeBytes { dataBytes in
                 keyData.withUnsafeBytes { keyBytes in
                     CCCrypt(
                         CCOperation(kCCEncrypt),
@@ -35,9 +33,9 @@ enum CryptoManager {
                         kCCKeySizeAES128,
                         nil,
                         dataBytes.baseAddress,
-                        dataToEncrypt.count,
+                        data.count,
                         encryptedBytes.baseAddress,
-                        outputBufferSize,
+                        outputLength,
                         &encryptedLength
                     )
                 }
@@ -45,9 +43,6 @@ enum CryptoManager {
         }
 
         guard status == kCCSuccess else {
-            print(
-                "❌ CryptoManager encrypt error: \(status)"
-            )
             return nil
         }
 
@@ -58,29 +53,26 @@ enum CryptoManager {
         return encryptedData.base64EncodedString()
     }
 
-    static func decrypt(
-        _ encryptedData: String
-    ) -> String? {
+    static func decryptString(_ value: String) -> String? {
         guard
-            let encryptedBytes = Data(
-                base64Encoded: encryptedData
+            let encryptedData = Data(
+                base64Encoded: value,
+                options: .ignoreUnknownCharacters
             ),
             let keyData = key.data(using: .utf8)
         else {
             return nil
         }
 
-        let outputBufferSize =
-            encryptedBytes.count + kCCBlockSizeAES128
-
         var decryptedData = Data(
-            count: outputBufferSize
+            count: encryptedData.count + kCCBlockSizeAES128
         )
 
+        let outputLength = decryptedData.count
         var decryptedLength: size_t = 0
 
         let status = decryptedData.withUnsafeMutableBytes { decryptedBytes in
-            encryptedBytes.withUnsafeBytes { encryptedDataBytes in
+            encryptedData.withUnsafeBytes { encryptedBytes in
                 keyData.withUnsafeBytes { keyBytes in
                     CCCrypt(
                         CCOperation(kCCDecrypt),
@@ -92,10 +84,10 @@ enum CryptoManager {
                         keyBytes.baseAddress,
                         kCCKeySizeAES128,
                         nil,
-                        encryptedDataBytes.baseAddress,
-                        encryptedBytes.count,
+                        encryptedBytes.baseAddress,
+                        encryptedData.count,
                         decryptedBytes.baseAddress,
-                        outputBufferSize,
+                        outputLength,
                         &decryptedLength
                     )
                 }
@@ -103,9 +95,6 @@ enum CryptoManager {
         }
 
         guard status == kCCSuccess else {
-            print(
-                "❌ CryptoManager decrypt error: \(status)"
-            )
             return nil
         }
 

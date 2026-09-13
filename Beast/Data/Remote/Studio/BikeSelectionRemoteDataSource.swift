@@ -9,49 +9,39 @@ protocol BikeSelectionRemoteDataSourceProtocol {
 final class BikeSelectionRemoteDataSource: BikeSelectionRemoteDataSourceProtocol {
     private let session: URLSession
 
-    private let endpoint = URL(
-        string: "https://apartarmobiliario-rdotx3vmaq-uc.a.run.app"
-    )!
+    private var endpoint: String {
+        AppConfiguration.serviceURL("apartarmobiliario")
+    }
 
-    init(
-        session: URLSession = .shared
-    ) {
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
     func reserveBike(
         request: ApartarMobiliarioRequest
     ) async throws -> ApartarMobiliarioResponse {
-        var urlRequest = URLRequest(
-            url: endpoint
-        )
+        guard let url = URL(string: endpoint) else {
+            throw BikeSelectionError.invalidURL
+        }
 
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Content-Type"
         )
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Accept"
         )
+        urlRequest.httpBody = try JSONEncoder().encode(request)
 
-        urlRequest.httpBody = try JSONEncoder().encode(
-            request
-        )
-
-        NetworkLogger.logRequest(
-            urlRequest
-        )
+        NetworkLogger.logRequest(urlRequest)
 
         let startedAt = Date()
 
         do {
-            let (data, response) = try await session.data(
-                for: urlRequest
-            )
+            let (data, response) = try await session.data(for: urlRequest)
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw BikeSelectionError.invalidResponse
@@ -61,9 +51,7 @@ final class BikeSelectionRemoteDataSource: BikeSelectionRemoteDataSourceProtocol
                 request: urlRequest,
                 response: httpResponse,
                 data: data,
-                duration: Date().timeIntervalSince(
-                    startedAt
-                )
+                duration: Date().timeIntervalSince(startedAt)
             )
 
             guard 200..<300 ~= httpResponse.statusCode else {
@@ -82,7 +70,6 @@ final class BikeSelectionRemoteDataSource: BikeSelectionRemoteDataSourceProtocol
                 ApartarMobiliarioResponse.self,
                 from: data
             )
-
         } catch let error as BikeSelectionError {
             throw error
         } catch {
@@ -97,15 +84,19 @@ final class BikeSelectionRemoteDataSource: BikeSelectionRemoteDataSourceProtocol
 }
 
 enum BikeSelectionError: LocalizedError {
+    case invalidURL
     case invalidResponse
     case backend(String)
 
     var errorDescription: String? {
         switch self {
+        case .invalidURL:
+            return "La URL para seleccionar la bicicleta no es válida."
+
         case .invalidResponse:
             return "La respuesta del servidor no es válida."
 
-        case .backend(let message):
+        case let .backend(message):
             return message
         }
     }

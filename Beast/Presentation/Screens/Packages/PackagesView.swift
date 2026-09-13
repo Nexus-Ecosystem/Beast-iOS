@@ -1,80 +1,69 @@
 import SwiftUI
 
 struct PackagesView: View {
-    @StateObject private var viewModel =
-        PackagesViewModel()
+
+    @StateObject private var viewModel = PackagesViewModel()
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
 
     var body: some View {
         ZStack {
-            BeastColors.background
+            Color("BeastBackground")
                 .ignoresSafeArea()
 
-            ScrollView(
-                showsIndicators: false
-            ) {
-                LazyVStack(
-                    spacing: 18
-                ) {
-                    header
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("Suscripciones y paquetes")
+                        .font(.system(size: 26, weight: .black))
+                        .italic()
+                        .foregroundStyle(.primary)
+                        .padding(.top, 8)
 
-                    ForEach(
-                        viewModel.packages
-                    ) { package in
-                        MembershipCard(
+                    if let package = viewModel.featuredPackage {
+                        FeaturedMembershipCard(
                             package: package,
-                            isActive:
-                                viewModel.isActive(
-                                    package
-                                ),
-                            isExpired:
-                                viewModel.isExpired(
-                                    package
-                                ),
-                            isEmpty:
-                                viewModel.isPackageEmpty(
-                                    package
-                                ),
-                            actionTitle:
-                                viewModel.actionTitle(
-                                    for: package
-                                ),
-                            actionEnabled:
-                                viewModel.canBuy(
-                                    package
-                                ),
-                            onBuy: {
-                                viewModel.selectPackage(
-                                    package
-                                )
-                            }
-                        )
+                            isActive: viewModel.isActive(package),
+                            buttonTitle: viewModel.actionTitle(for: package),
+                            canBuy: viewModel.canBuy(package)
+                        ) {
+                            viewModel.selectPackage(package)
+                        }
                     }
 
-                    Spacer()
-                        .frame(
-                            height: 120
-                        )
+                    if !viewModel.otherPackages.isEmpty {
+                        Text("Otras opciones")
+                            .font(.system(size: 22, weight: .black))
+                            .foregroundStyle(.primary)
+                            .padding(.top, 2)
+
+                        LazyVGrid(
+                            columns: columns,
+                            alignment: .center,
+                            spacing: 14
+                        ) {
+                            ForEach(viewModel.otherPackages) { package in
+                                SpecialPackageCard(
+                                    package: package,
+                                    isActive: viewModel.isActive(package),
+                                    buttonTitle: viewModel.actionTitle(for: package),
+                                    canBuy: viewModel.canBuy(package)
+                                ) {
+                                    viewModel.selectPackage(package)
+                                }
+                            }
+                        }
+                    }
                 }
-                .padding(
-                    .horizontal,
-                    24
-                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 120)
             }
 
             if viewModel.isLoading {
                 BeastLoadingOverlay()
-            }
-
-            if let error =
-                viewModel.errorMessage
-            {
-                BeastAlertDialog(
-                    style: .error,
-                    message: error
-                ) {
-                    viewModel.resetError()
-                }
-                .zIndex(40)
+                    .zIndex(100)
             }
         }
         .task {
@@ -84,56 +73,18 @@ struct PackagesView: View {
             await viewModel.refresh()
         }
         .fullScreenCover(
-            isPresented:
-                $viewModel.showPurchaseConfirmation
+            isPresented: $viewModel.showPurchaseConfirmation
         ) {
-            if let package =
-                viewModel.selectedPackage
-            {
+            if let package = viewModel.selectedPackage {
                 PurchaseConfirmationView(
                     package: package,
-                    userName:
-                        viewModel.userName,
-                    phone:
-                        "523323542375"
-                ) {
-                    viewModel
-                        .dismissPurchaseConfirmation()
-                }
-                .presentationBackground(
-                    .clear
+                    userName: viewModel.userName,
+                    phone: viewModel.profile?.phone ?? "",
+                    onDismiss: {
+                        viewModel.dismissPurchaseConfirmation()
+                    }
                 )
             }
         }
     }
-
-    private var header: some View {
-        HStack {
-            Text("Paquetes")
-                .font(
-                    .system(
-                        size: 30,
-                        weight: .black
-                    )
-                )
-                .italic()
-                .foregroundStyle(
-                    BeastColors.textPrimary
-                )
-
-            Spacer()
-        }
-        .padding(
-            .top,
-            20
-        )
-        .padding(
-            .bottom,
-            6
-        )
-    }
-}
-
-#Preview {
-    PackagesView()
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyBd7iuigmYa6vEnM7OdsXj4QXX5__Mvj5c</string>
+	<key>GCM_SENDER_ID</key>
+	<string>574069852466</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.nexus.beast.Beast</string>
+	<key>PROJECT_ID</key>
+	<string>bookings-spinnings-dev</string>
+	<key>STORAGE_BUCKET</key>
+	<string>bookings-spinnings-dev.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:574069852466:ios:5c382342f3633dda0e2f2b</string>
+</dict>
+</plist>

@@ -37,7 +37,9 @@ struct ScheduleView: View {
                     ScheduleDaysSelector(
                         selectedDate: viewModel.selectedDate,
                         onSelectDate: { date in
-                            viewModel.selectDate(date)
+                            viewModel.selectDate(
+                                date
+                            )
                         }
                     )
                     .padding(.top, 16)
@@ -56,6 +58,7 @@ struct ScheduleView: View {
 
             if viewModel.isLoading {
                 ScheduleLoadingView()
+                    .zIndex(100)
             }
         }
         .onAppear {
@@ -64,18 +67,22 @@ struct ScheduleView: View {
     }
 
     private var scheduleList: some View {
-        LazyVStack(spacing: 16) {
+        LazyVStack(
+            spacing: 16
+        ) {
             ForEach(
                 viewModel.visibleSchedules
             ) { item in
                 ScheduleClassCard(
                     item: item,
-                    isExtraBooking: viewModel.isExtraBooking(
-                        item
-                    ),
-                    canCancel: viewModel.canCancel(
-                        item
-                    ),
+                    isExtraBooking:
+                        viewModel.isExtraBooking(
+                            item
+                        ),
+                    canCancel:
+                        viewModel.canCancel(
+                            item
+                        ),
                     onAction: {
                         viewModel.selectClass(
                             item
@@ -91,7 +98,13 @@ struct ScheduleView: View {
                 )
             }
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 20)
+        .padding(
+            .horizontal,
+            24
+        )
+        .padding(
+            .top,
+            20
+        )
     }
 }

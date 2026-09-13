@@ -9,12 +9,18 @@
 /* Begin PBXBuildFile section */
 		0B1476F9304A30FF0060FD22 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B1476F8304A30FF0060FD22 /* FirebaseCore */; };
 		0B1476FB304A30FF0060FD22 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 0B1476FA304A30FF0060FD22 /* FirebaseFirestore */; };
+		0B63865530548F71005BD099 /* GoogleService-Info-Dev.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0B63865230548CCC005BD099 /* GoogleService-Info-Dev.plist */; };
+		0B63865630548F75005BD099 /* GoogleService-Info-Prod.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0B63857C305467F2005BD099 /* GoogleService-Info-Prod.plist */; };
 		0B9108D42F29461F00B9196A /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 0B9108D32F29461F00B9196A /* Lottie */; };
 		0BB1684A304F32AB0076D367 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB16849304F32AB0076D367 /* FirebaseAuth */; };
 		0BB1684C304F32AB0076D367 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB1684B304F32AB0076D367 /* FirebaseStorage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0B63857C305467F2005BD099 /* GoogleService-Info-Prod.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Prod.plist"; sourceTree = "<group>"; };
+		0B63864430547A75005BD099 /* Dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Dev.xcconfig; sourceTree = "<group>"; };
+		0B63864530547A91005BD099 /* Prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Prod.xcconfig; sourceTree = "<group>"; };
+		0B63865230548CCC005BD099 /* GoogleService-Info-Dev.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Dev.plist"; sourceTree = "<group>"; };
 		0B9107D42F27EA4900B9196A /* Beast.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Beast.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -23,6 +29,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Repositories/Untitled.swift,
+				Info.plist,
 			);
 			target = 0B9107D32F27EA4900B9196A /* Beast */;
 		};
@@ -55,9 +62,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0B63864330547A66005BD099 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				0B63865230548CCC005BD099 /* GoogleService-Info-Dev.plist */,
+				0B63857C305467F2005BD099 /* GoogleService-Info-Prod.plist */,
+				0B63864530547A91005BD099 /* Prod.xcconfig */,
+				0B63864430547A75005BD099 /* Dev.xcconfig */,
+			);
+			path = Configurations;
+			sourceTree = "<group>";
+		};
 		0B9107CB2F27EA4900B9196A = {
 			isa = PBXGroup;
 			children = (
+				0B63864330547A66005BD099 /* Configurations */,
 				0B9107D62F27EA4900B9196A /* Beast */,
 				0B9107D52F27EA4900B9196A /* Products */,
 			);
@@ -81,6 +100,7 @@
 				0B9107D02F27EA4900B9196A /* Sources */,
 				0B9107D12F27EA4900B9196A /* Frameworks */,
 				0B9107D22F27EA4900B9196A /* Resources */,
+				0B63865430548CFB005BD099 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -144,10 +164,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0B63865630548F75005BD099 /* GoogleService-Info-Prod.plist in Resources */,
+				0B63865530548F71005BD099 /* GoogleService-Info-Dev.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0B63865430548CFB005BD099 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "
+";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0B9107D02F27EA4900B9196A /* Sources */ = {
@@ -278,6 +321,7 @@
 		};
 		0B9107E02F27EA4B00B9196A /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0B63864430547A75005BD099 /* Dev.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -289,6 +333,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Beast/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -323,6 +368,7 @@
 		};
 		0B9107E12F27EA4B00B9196A /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0B63864530547A91005BD099 /* Prod.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -334,6 +380,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Beast/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

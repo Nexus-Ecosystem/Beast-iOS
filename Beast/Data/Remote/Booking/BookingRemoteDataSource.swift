@@ -9,52 +9,39 @@ protocol BookingRemoteDataSourceProtocol {
 final class BookingRemoteDataSource: BookingRemoteDataSourceProtocol {
     private let session: URLSession
 
-    private let endpoint = URL(
-        string: "https://agendarclase-rdotx3vmaq-uc.a.run.app"
-    )!
+    private var endpoint: String {
+        AppConfiguration.serviceURL("agendarclase")
+    }
 
-    init(
-        session: URLSession = .shared
-    ) {
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
     func bookingClass(
         request: BookingClassRequest
     ) async throws -> BookingClassResponse {
-        var urlRequest = URLRequest(
-            url: endpoint
-        )
+        guard let url = URL(string: endpoint) else {
+            throw BookingRemoteError.invalidURL
+        }
 
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Content-Type"
         )
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Accept"
         )
+        urlRequest.httpBody = try JSONEncoder().encode(request)
 
-        urlRequest.httpBody = try JSONEncoder().encode(
-            request
-        )
-
-        NetworkLogger.logRequest(
-            urlRequest
-        )
+        NetworkLogger.logRequest(urlRequest)
 
         let startTime = Date()
 
         do {
-            let (
-                data,
-                response
-            ) = try await session.data(
-                for: urlRequest
-            )
+            let (data, response) = try await session.data(for: urlRequest)
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw BookingRemoteError.invalidResponse
@@ -64,9 +51,7 @@ final class BookingRemoteDataSource: BookingRemoteDataSourceProtocol {
                 request: urlRequest,
                 response: httpResponse,
                 data: data,
-                duration: Date().timeIntervalSince(
-                    startTime
-                )
+                duration: Date().timeIntervalSince(startTime)
             )
 
             guard 200..<300 ~= httpResponse.statusCode else {
@@ -78,8 +63,7 @@ final class BookingRemoteDataSource: BookingRemoteDataSourceProtocol {
                     .message
 
                 throw BookingRemoteError.backend(
-                    backendMessage ??
-                    "No fue posible realizar la operación."
+                    backendMessage ?? "No fue posible realizar la operación."
                 )
             }
 
@@ -108,15 +92,19 @@ final class BookingRemoteDataSource: BookingRemoteDataSourceProtocol {
 }
 
 enum BookingRemoteError: LocalizedError {
+    case invalidURL
     case invalidResponse
     case backend(String)
 
     var errorDescription: String? {
         switch self {
+        case .invalidURL:
+            return "La URL para agendar la clase no es válida."
+
         case .invalidResponse:
             return "La respuesta del servidor no es válida."
 
-        case .backend(let message):
+        case let .backend(message):
             return message
         }
     }

@@ -17,6 +17,9 @@ final class ScheduleViewModel: ObservableObject {
     @Published var showBookingSuccess = false
     @Published var showBookingError = false
 
+    // NUEVO
+    @Published var showNoMembership = false
+
     @Published var bookingMessage = ""
 
     private let schedulesUseCase: SchedulesUseCase
@@ -38,16 +41,12 @@ final class ScheduleViewModel: ObservableObject {
     }
 
     var visibleSchedules: [ClassItem] {
-        guard Calendar.current.isDateInToday(
-            selectedDate
-        ) else {
+        guard Calendar.current.isDateInToday(selectedDate) else {
             return schedules
         }
 
         return schedules.filter {
-            isUpcoming(
-                time: $0.time
-            )
+            isUpcoming(time: $0.time)
         }
     }
 
@@ -57,15 +56,72 @@ final class ScheduleViewModel: ObservableObject {
 
     var hasScheduledClass: Bool {
         schedules.contains {
-            $0.isScheduled
+            $0.isScheduled && !$0.cancelled
         }
+    }
+
+    // MARK: - Membership
+
+    var hasActiveMembership: Bool {
+        guard let profile else {
+            return false
+        }
+
+        let package = profile.activePackage
+
+        // Mismo criterio que Android:
+        // !idPaquete.isNullOrEmpty() && idPaquete != "-"
+        guard
+            !package.idPaquete.isEmpty,
+            package.idPaquete != "-"
+        else {
+            return false
+        }
+
+        // Validar expiración
+        if isPackageExpired(package.expiracion) {
+            return false
+        }
+
+        // tipoPaquete == 1 = mensual
+        if package.tipoPaquete == 1 {
+            return true
+        }
+
+        // Paquete por número de clases
+        return package.clasesTomadas < package.clasesTotales
+    }
+
+    var membershipUnavailableReason: MembershipUnavailableReason? {
+        guard let profile else {
+            return .noPackage
+        }
+
+        let package = profile.activePackage
+
+        guard
+            !package.idPaquete.isEmpty,
+            package.idPaquete != "-"
+        else {
+            return .noPackage
+        }
+
+        if isPackageExpired(package.expiracion) {
+            return .expired
+        }
+
+        if package.tipoPaquete != 1,
+           package.clasesTomadas >= package.clasesTotales {
+            return .consumed
+        }
+
+        return nil
     }
 
     func onAppear() {
         guard let profile = storage.getProfile() else {
             schedules = []
-            errorMessage =
-                "No se encontró el perfil del usuario."
+            errorMessage = "No se encontró el perfil del usuario."
             return
         }
 
@@ -74,14 +130,12 @@ final class ScheduleViewModel: ObservableObject {
         branch = profile.branches.first ?? ""
 
         guard !email.isEmpty else {
-            errorMessage =
-                "No se encontró el correo del usuario."
+            errorMessage = "No se encontró el correo del usuario."
             return
         }
 
         guard !branch.isEmpty else {
-            errorMessage =
-                "No se encontró la sucursal del usuario."
+            errorMessage = "No se encontró la sucursal del usuario."
             return
         }
 
@@ -89,9 +143,7 @@ final class ScheduleViewModel: ObservableObject {
         observeSchedules()
     }
 
-    func selectDate(
-        _ date: Date
-    ) {
+    func selectDate(_ date: Date) {
         guard !Calendar.current.isDate(
             date,
             inSameDayAs: selectedDate
@@ -99,8 +151,7 @@ final class ScheduleViewModel: ObservableObject {
             return
         }
 
-        let previousMonth =
-            selectedDate.scheduleMonth
+        let previousMonth = selectedDate.scheduleMonth
 
         selectedDate = date
 
@@ -111,15 +162,16 @@ final class ScheduleViewModel: ObservableObject {
         observeSchedules()
     }
 
-    func selectClass(
-        _ item: ClassItem
-    ) {
+    func selectClass(_ item: ClassItem) {
         guard !item.cancelled else {
             return
         }
 
         selectedClass = item
 
+        // IMPORTANTE:
+        // Si ya está agendada, permitimos cancelar aunque el paquete
+        // actualmente esté vencido o consumido.
         if item.isScheduled {
             guard canCancel(item) else {
                 return
@@ -129,30 +181,63 @@ final class ScheduleViewModel: ObservableObject {
             return
         }
 
-        if hasScheduledClass {
-            showExtraBookingConfirmation = true
-        } else {
+        // NUEVO:
+        // Antes de permitir una nueva reserva validamos membresía.
+        guard hasActiveMembership else {
+            showNoMembership = true
+            return
+        }
+
+        guard let profile else {
+            showNoMembership = true
+            return
+        }
+
+        let package = profile.activePackage
+
+        // Mensual
+        if package.tipoPaquete == 1 {
+            if hasScheduledClass {
+                showExtraBookingConfirmation = true
+            } else {
+                showBookingConfirmation = true
+            }
+
+            return
+        }
+
+        // Paquete por clases
+        if package.clasesTomadas < package.clasesTotales {
             showBookingConfirmation = true
+        } else {
+            showNoMembership = true
         }
     }
 
     func confirmBooking() {
         showBookingConfirmation = false
 
+        // Segunda protección.
+        guard hasActiveMembership else {
+            showNoMembership = true
+            return
+        }
+
         Task {
-            await performBooking(
-                action: .book
-            )
+            await performBooking(action: .book)
         }
     }
 
     func confirmExtraBooking() {
         showExtraBookingConfirmation = false
 
+        guard hasActiveMembership else {
+            showNoMembership = true
+            return
+        }
+
         Task {
-            await performBooking(
-                action: .book
-            )
+            await performBooking(action: .book)
         }
     }
 
@@ -160,9 +245,7 @@ final class ScheduleViewModel: ObservableObject {
         showCancellationConfirmation = false
 
         Task {
-            await performBooking(
-                action: .cancel
-            )
+            await performBooking(action: .cancel)
         }
     }
 
@@ -170,6 +253,11 @@ final class ScheduleViewModel: ObservableObject {
         showBookingConfirmation = false
         showCancellationConfirmation = false
         showExtraBookingConfirmation = false
+        selectedClass = nil
+    }
+
+    func closeNoMembership() {
+        showNoMembership = false
         selectedClass = nil
     }
 
@@ -182,22 +270,22 @@ final class ScheduleViewModel: ObservableObject {
         showBookingError = false
     }
 
-    func isExtraBooking(
-        _ item: ClassItem
-    ) -> Bool {
-        !item.isScheduled &&
-        !item.cancelled &&
-        hasScheduledClass
+    func isExtraBooking(_ item: ClassItem) -> Bool {
+        guard let profile else {
+            return false
+        }
+
+        return
+            profile.activePackage.tipoPaquete == 1 &&
+            !item.isScheduled &&
+            !item.cancelled &&
+            hasScheduledClass
     }
 
-    func canCancel(
-        _ item: ClassItem
-    ) -> Bool {
+    func canCancel(_ item: ClassItem) -> Bool {
         item.isScheduled &&
         !item.cancelled &&
-        isCancelable(
-            time: item.time
-        )
+        isCancelable(time: item.time)
     }
 
     private func performBooking(
@@ -210,18 +298,24 @@ final class ScheduleViewModel: ObservableObject {
             return
         }
 
+        // Protección final únicamente al AGENDAR.
+        // Cancelar debe poder continuar.
+        if action == .book && !hasActiveMembership {
+            showNoMembership = true
+            return
+        }
+
         isBookingLoading = true
         bookingMessage = ""
 
         do {
-            let response =
-                try await bookingUseCase.execute(
-                    branch: branch,
-                    date: selectedDate.scheduleDay,
-                    item: selectedClass,
-                    profile: profile,
-                    action: action
-                )
+            let response = try await bookingUseCase.execute(
+                branch: branch,
+                date: selectedDate.scheduleDay,
+                item: selectedClass,
+                profile: profile,
+                action: action
+            )
 
             isBookingLoading = false
 
@@ -234,13 +328,6 @@ final class ScheduleViewModel: ObservableObject {
                 return
             }
 
-            /*
-             Android hace:
-
-             getRemindersByDay(selectedDay.value)
-
-             Nosotros reiniciamos la observación del día.
-             */
             observeSchedules()
 
             switch action {
@@ -257,8 +344,7 @@ final class ScheduleViewModel: ObservableObject {
 
         } catch {
             isBookingLoading = false
-            bookingMessage =
-                error.localizedDescription
+            bookingMessage = error.localizedDescription
             showBookingError = true
         }
     }
@@ -289,8 +375,7 @@ final class ScheduleViewModel: ObservableObject {
                 }
 
                 self.schedules = []
-                self.errorMessage =
-                    error.localizedDescription
+                self.errorMessage = error.localizedDescription
                 self.isLoading = false
             }
         )
@@ -310,18 +395,46 @@ final class ScheduleViewModel: ObservableObject {
             email: email,
             onChange: {},
             onError: { [weak self] error in
-                self?.errorMessage =
-                    error.localizedDescription
+                self?.errorMessage = error.localizedDescription
             }
         )
+    }
+
+    private func isPackageExpired(
+        _ expiration: String
+    ) -> Bool {
+        guard !expiration.isEmpty else {
+            return true
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        guard let expirationDate = formatter.date(
+            from: expiration
+        ) else {
+            // Android en el catch deja continuar.
+            // Para conservar exactamente ese comportamiento:
+            return false
+        }
+
+        let calendar = Calendar.current
+
+        let today = calendar.startOfDay(for: Date())
+        let expirationDay =
+            calendar.startOfDay(for: expirationDate)
+
+        // Igual que Android:
+        // today.isAfter(fechaExp)
+        return today > expirationDay
     }
 
     private func isUpcoming(
         time: String
     ) -> Bool {
-        let values = time.split(
-            separator: ":"
-        )
+        let values = time.split(separator: ":")
 
         guard
             values.count >= 2,
@@ -356,9 +469,7 @@ final class ScheduleViewModel: ObservableObject {
             return true
         }
 
-        let values = time.split(
-            separator: ":"
-        )
+        let values = time.split(separator: ":")
 
         guard
             values.count >= 2,
@@ -380,13 +491,17 @@ final class ScheduleViewModel: ObservableObject {
         }
 
         return Date() <
-            classDate.addingTimeInterval(
-                -7200
-            )
+            classDate.addingTimeInterval(-7200)
     }
 
     deinit {
         schedulesUseCase.stopSchedulesObserver()
         schedulesUseCase.stopPendingSchedulesObserver()
     }
+}
+
+enum MembershipUnavailableReason {
+    case noPackage
+    case expired
+    case consumed
 }

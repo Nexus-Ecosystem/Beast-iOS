@@ -8,6 +8,9 @@ struct ProfileView: View {
     @AppStorage("dark_mode")
     private var darkMode = false
 
+    @Environment(\.openURL)
+    private var openURL
+
     @State
     private var showEditProfile = false
 
@@ -24,7 +27,6 @@ struct ProfileView: View {
     private var showChangePassword = false
 
     var onPackages: () -> Void = {}
-    var onPolicies: () -> Void = {}
 
     var body: some View {
         ZStack {
@@ -176,7 +178,7 @@ struct ProfileView: View {
                     title:
                         "Políticas e Información"
                 ) {
-                    onPolicies()
+                    openPolicies()
                 }
 
                 Divider()
@@ -308,6 +310,17 @@ struct ProfileView: View {
                 .leading,
                 6
             )
+    }
+
+    private func openPolicies() {
+        guard let url = URL(
+            string:
+                "https://bookings-spinnings.web.app/aviso-de-privacidad"
+        ) else {
+            return
+        }
+
+        openURL(url)
     }
 
     private func openResponsiva() {

@@ -1,9 +1,7 @@
 import Foundation
 
 protocol AuthAPIProtocol {
-    func login(
-        request: LoginRequest
-    ) async throws -> LoginResponse
+    func login(request: LoginRequest) async throws -> LoginResponse
 }
 
 final class AuthAPI: AuthAPIProtocol {
@@ -18,29 +16,23 @@ final class AuthAPI: AuthAPIProtocol {
         self.encoder = encoder
     }
 
-    func login(
-        request: LoginRequest
-    ) async throws -> LoginResponse {
+    func login(request: LoginRequest) async throws -> LoginResponse {
         guard let url = URL(
-            string: "https://login-rdotx3vmaq-uc.a.run.app"
+            string: AppConfiguration.serviceURL("login")
         ) else {
             throw NetworkError.invalidURL
         }
 
         var urlRequest = URLRequest(url: url)
-
         urlRequest.httpMethod = "POST"
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Content-Type"
         )
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Accept"
         )
-
         urlRequest.httpBody = try encoder.encode(request)
 
         return try await networkClient.execute(

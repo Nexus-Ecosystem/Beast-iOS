@@ -26,9 +26,7 @@ protocol ScheduleFirebaseDataSourceProtocol {
 final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
     private let firestore: Firestore
 
-    init(
-        firestore: Firestore = Firestore.firestore()
-    ) {
+    init(firestore: Firestore = Firestore.firestore()) {
         self.firestore = firestore
     }
 
@@ -39,8 +37,7 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
         onChange: @escaping ([ClassItem]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> ListenerRegistration {
-        let path =
-            "classes/studios/\(branch)/\(month)/dias/\(day)/SCHEDULES"
+        let path = "classes/studios/\(branch)/\(month)/dias/\(day)/SCHEDULES"
 
         NetworkLogger.logFirebaseRequest(
             path: path,
@@ -66,35 +63,20 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
                     return
                 }
 
-                let documents =
-                    snapshot?.documents ?? []
-
-                let rawDocuments =
-                    documents.map { document in
-                        var data =
-                            document.data()
-
-                        data["_documentId"] =
-                            document.documentID
-
-                        return data
-                    }
+                let documents = snapshot?.documents ?? []
 
                 NetworkLogger.logFirebaseResponse(
                     path: path,
-                    documents: rawDocuments
-                )
-
-                let schedules =
-                    documents.map {
-                        self.mapSchedule(
-                            document: $0
-                        )
+                    documents: documents.map {
+                        self.rawDocument($0)
                     }
-
-                onChange(
-                    schedules
                 )
+
+                let schedules = documents.map {
+                    self.mapSchedule(document: $0)
+                }
+
+                onChange(schedules)
             }
     }
 
@@ -105,8 +87,7 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
         onChange: @escaping ([ClassItemEntity]) -> Void,
         onError: @escaping (Error) -> Void
     ) -> ListenerRegistration {
-        let path =
-            "users/\(email)/HISTORIAL_CLASSES/\(month)/classes"
+        let path = "users/\(email)/HISTORIAL_CLASSES/\(month)/classes"
 
         NetworkLogger.logFirebaseRequest(
             path: path,
@@ -130,43 +111,27 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
                     return
                 }
 
-                let documents =
-                    snapshot?.documents ?? []
-
-                let rawDocuments =
-                    documents.map { document in
-                        var data =
-                            document.data()
-
-                        data["_documentId"] =
-                            document.documentID
-
-                        return data
-                    }
+                let documents = snapshot?.documents ?? []
 
                 NetworkLogger.logFirebaseResponse(
                     path: path,
-                    documents: rawDocuments
-                )
-
-                let reservations =
-                    documents.map {
-                        self.mapReservation(
-                            document: $0
-                        )
+                    documents: documents.map {
+                        self.rawDocument($0)
                     }
-
-                onChange(
-                    reservations
                 )
+
+                let reservations = documents.map {
+                    self.mapReservation(document: $0)
+                }
+
+                onChange(reservations)
             }
     }
 
     func memberships(
         branch: String
     ) async -> [PaqueteMemberShipModel] {
-        let path =
-            "membresias/\(branch)/membrecias"
+        let path = "membresias/\(branch)/membrecias"
 
         NetworkLogger.logFirebaseRequest(
             path: path,
@@ -180,26 +145,15 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
                 .collection("membrecias")
                 .getDocuments()
 
-            let rawDocuments =
-                snapshot.documents.map { document in
-                    var data =
-                        document.data()
-
-                    data["_documentId"] =
-                        document.documentID
-
-                    return data
-                }
-
             NetworkLogger.logFirebaseResponse(
                 path: path,
-                documents: rawDocuments
+                documents: snapshot.documents.map {
+                    rawDocument($0)
+                }
             )
 
             return snapshot.documents.map {
-                mapMembership(
-                    document: $0
-                )
+                mapMembership(document: $0)
             }
         } catch {
             NetworkLogger.logFirebaseError(
@@ -214,76 +168,36 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
     private func mapMembership(
         document: QueryDocumentSnapshot
     ) -> PaqueteMemberShipModel {
-        let data =
-            document.data()
+        let data = document.data()
 
         return PaqueteMemberShipModel(
-            idPaquete:
-                stringValue(
-                    data["idPaquete"]
-                )
-                .ifEmpty(
-                    document.documentID
-                ),
-            name:
-                stringValue(
-                    data["name"]
-                ),
-            descripcion:
-                stringValue(
-                    data["descripcion"]
-                ),
-            precioRegular:
-                doubleValue(
-                    data["precioRegular"]
-                ),
-            precioDescuento:
-                doubleValue(
-                    data["precioDescuento"]
-                ),
-            beneficios:
-                stringArrayValue(
-                    data["beneficios"]
-                ),
-            tipoPaquete:
-                intValue(
-                    data["tipoPaquete"]
-                )
+            idPaquete: stringValue(data["idPaquete"])
+                .ifEmpty(document.documentID),
+            name: stringValue(data["name"]),
+            descripcion: stringValue(data["descripcion"]),
+            precioRegular: doubleValue(data["precioRegular"]),
+            precioDescuento: doubleValue(data["precioDescuento"]),
+            beneficios: stringArrayValue(data["beneficios"]),
+            tipoPaquete: intValue(data["tipoPaquete"]),
+            imagePlan: stringValue(data["imagePlan"])
         )
     }
 
     private func mapSchedule(
         document: QueryDocumentSnapshot
     ) -> ClassItem {
-        let data =
-            document.data()
+        let data = document.data()
 
         return ClassItem(
             id: document.documentID,
-            name:
-                data["name"] as? String ??
-                "",
-            coach:
-                data["coach"] as? String ??
-                "",
-            photo:
-                data["photo"] as? String ??
-                "",
-            time:
-                data["time"] as? String ??
-                document.documentID,
-            duration: intValue(
-                data["duration"]
-            ),
-            level: intValue(
-                data["level"]
-            ),
-            agenda: intValue(
-                data["agenda"]
-            ),
-            total: intValue(
-                data["total"]
-            ),
+            name: data["name"] as? String ?? "",
+            coach: data["coach"] as? String ?? "",
+            photo: data["photo"] as? String ?? "",
+            time: data["time"] as? String ?? document.documentID,
+            duration: intValue(data["duration"]),
+            level: intValue(data["level"]),
+            agenda: intValue(data["agenda"]),
+            total: intValue(data["total"]),
             cancelled:
                 data["cancelada"] as? Bool ??
                 data["cancelled"] as? Bool ??
@@ -295,13 +209,11 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
     private func mapReservation(
         document: QueryDocumentSnapshot
     ) -> ClassItemEntity {
-        let data =
-            document.data()
+        let data = document.data()
 
         return ClassItemEntity(
             id: nil,
-            idFirebase:
-                document.documentID,
+            idFirebase: document.documentID,
             sucursalAgendada:
                 data["sucursalAgendada"] as? String ??
                 data["idSucursal"] as? String ??
@@ -310,31 +222,17 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
                 data["diaAgendado"] as? String ??
                 data["dia"] as? String ??
                 "",
-            coach:
-                data["coach"] as? String ??
-                "",
-            name:
-                data["name"] as? String ??
-                "",
+            coach: data["coach"] as? String ?? "",
+            name: data["name"] as? String ?? "",
             time:
                 data["time"] as? String ??
                 data["horario"] as? String ??
                 "",
-            duration: intValue(
-                data["duration"]
-            ),
-            level: intValue(
-                data["level"]
-            ),
-            agenda: intValue(
-                data["agenda"]
-            ),
-            total: intValue(
-                data["total"]
-            ),
-            photo:
-                data["photo"] as? String ??
-                "",
+            duration: intValue(data["duration"]),
+            level: intValue(data["level"]),
+            agenda: intValue(data["agenda"]),
+            total: intValue(data["total"]),
+            photo: data["photo"] as? String ?? "",
             cancelled:
                 data["cancelada"] as? Bool ??
                 data["cancelled"] as? Bool ??
@@ -343,9 +241,15 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
         )
     }
 
-    private func stringValue(
-        _ value: Any?
-    ) -> String {
+    private func rawDocument(
+        _ document: QueryDocumentSnapshot
+    ) -> [String: Any] {
+        var data = document.data()
+        data["_documentId"] = document.documentID
+        return data
+    }
+
+    private func stringValue(_ value: Any?) -> String {
         if let value = value as? String {
             return value
         }
@@ -357,23 +261,17 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
         return ""
     }
 
-    private func doubleValue(
-        _ value: Any?
-    ) -> Double {
+    private func doubleValue(_ value: Any?) -> Double {
         if let value = value as? Double {
             return value
         }
 
         if let value = value as? Int {
-            return Double(
-                value
-            )
+            return Double(value)
         }
 
         if let value = value as? Int64 {
-            return Double(
-                value
-            )
+            return Double(value)
         }
 
         if let value = value as? NSNumber {
@@ -381,26 +279,18 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
         }
 
         if let value = value as? String {
-            return Double(
-                value
-            ) ?? 0
+            return Double(value) ?? 0
         }
 
         return 0
     }
 
-    private func stringArrayValue(
-        _ value: Any?
-    ) -> [String] {
-        if let value =
-            value as? [String]
-        {
+    private func stringArrayValue(_ value: Any?) -> [String] {
+        if let value = value as? [String] {
             return value
         }
 
-        if let value =
-            value as? [Any]
-        {
+        if let value = value as? [Any] {
             return value.compactMap {
                 $0 as? String
             }
@@ -409,17 +299,13 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
         return []
     }
 
-    private func intValue(
-        _ value: Any?
-    ) -> Int {
+    private func intValue(_ value: Any?) -> Int {
         if let value = value as? Int {
             return value
         }
 
         if let value = value as? Int64 {
-            return Int(
-                value
-            )
+            return Int(value)
         }
 
         if let value = value as? NSNumber {
@@ -427,9 +313,7 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
         }
 
         if let value = value as? String {
-            return Int(
-                value
-            ) ?? 0
+            return Int(value) ?? 0
         }
 
         return 0
@@ -437,11 +321,7 @@ final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
 }
 
 private extension String {
-    func ifEmpty(
-        _ fallback: String
-    ) -> String {
-        isEmpty
-        ? fallback
-        : self
+    func ifEmpty(_ fallback: String) -> String {
+        isEmpty ? fallback : self
     }
 }

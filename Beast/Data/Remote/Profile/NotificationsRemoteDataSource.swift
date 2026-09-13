@@ -11,100 +11,66 @@ final class NotificationsRemoteDataSource:
 {
     private let session: URLSession
 
-    private let endpoint =
-        "https://getnotifications-rdotx3vmaq-uc.a.run.app"
+    private var endpoint: String {
+        AppConfiguration.serviceURL("getnotifications")
+    }
 
-    init(
-        session: URLSession = .shared
-    ) {
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
     func getNotifications(
         request: NotificationsRequest
     ) async throws -> NotificationsResponse {
-        guard let url = URL(
-            string: endpoint
-        ) else {
+        guard let url = URL(string: endpoint) else {
             throw NotificationsRemoteError.invalidURL
         }
 
-        var urlRequest = URLRequest(
-            url: url
-        )
-
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Content-Type"
         )
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Accept"
         )
+        urlRequest.httpBody = try JSONEncoder().encode(request)
 
-        urlRequest.httpBody =
-            try JSONEncoder()
-                .encode(
-                    request
-                )
-
-        NetworkLogger.logRequest(
-            urlRequest
-        )
+        NetworkLogger.logRequest(urlRequest)
 
         let startTime = Date()
 
         do {
-            let (
-                data,
-                response
-            ) = try await session.data(
-                for: urlRequest
-            )
+            let (data, response) = try await session.data(for: urlRequest)
 
-            guard let httpResponse =
-                response as? HTTPURLResponse
-            else {
-                throw NotificationsRemoteError
-                    .invalidResponse
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NotificationsRemoteError.invalidResponse
             }
 
             NetworkLogger.logResponse(
                 request: urlRequest,
                 response: httpResponse,
                 data: data,
-                duration:
-                    Date()
-                        .timeIntervalSince(
-                            startTime
-                        )
+                duration: Date().timeIntervalSince(startTime)
             )
 
-            guard
-                (200...299)
-                    .contains(
-                        httpResponse.statusCode
-                    )
-            else {
+            guard 200..<300 ~= httpResponse.statusCode else {
                 throw NotificationsRemoteError.httpError(
                     httpResponse.statusCode
                 )
             }
 
             do {
-                return try JSONDecoder()
-                    .decode(
-                        NotificationsResponse.self,
-                        from: data
-                    )
+                return try JSONDecoder().decode(
+                    NotificationsResponse.self,
+                    from: data
+                )
             } catch {
-                throw NotificationsRemoteError
-                    .decodingError(
-                        error.localizedDescription
-                    )
+                throw NotificationsRemoteError.decodingError(
+                    error.localizedDescription
+                )
             }
         } catch {
             NetworkLogger.logError(
@@ -117,9 +83,7 @@ final class NotificationsRemoteDataSource:
     }
 }
 
-enum NotificationsRemoteError:
-    LocalizedError
-{
+enum NotificationsRemoteError: LocalizedError {
     case invalidURL
     case invalidResponse
     case httpError(Int)

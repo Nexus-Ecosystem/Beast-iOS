@@ -19,9 +19,7 @@ final class RegistrationRemoteDataSource:
 {
     private let session: URLSession
 
-    init(
-        session: URLSession = .shared
-    ) {
+    init(session: URLSession = .shared) {
         self.session = session
     }
 
@@ -48,9 +46,23 @@ final class RegistrationRemoteDataSource:
     func register(
         request: RegisterRequest
     ) async throws -> RegisterResponse {
-        try await perform(
+        guard let encryptedPassword = CryptoManager.encryptString(
+            request.password
+        ) else {
+            throw RegistrationRemoteError.encryptionFailed
+        }
+
+        let encryptedRequest = RegisterRequest(
+            email: request.email,
+            password: encryptedPassword,
+            fullName: request.fullName,
+            phone: request.phone,
+            tokenFirebase: request.tokenFirebase
+        )
+
+        return try await perform(
             endpoint: RegistrationEndpoints.register,
-            body: request,
+            body: encryptedRequest,
             responseType: RegisterResponse.self
         )
     }
@@ -60,48 +72,32 @@ final class RegistrationRemoteDataSource:
         body: Request,
         responseType: Response.Type
     ) async throws -> Response {
-        guard let url = URL(
-            string: endpoint
-        ) else {
+        guard let url = URL(string: endpoint) else {
             throw RegistrationRemoteError.invalidURL
         }
 
-        var urlRequest = URLRequest(
-            url: url
-        )
-
+        var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Content-Type"
         )
-
         urlRequest.setValue(
             "application/json",
             forHTTPHeaderField: "Accept"
         )
+        urlRequest.httpBody = try JSONEncoder().encode(body)
 
-        urlRequest.httpBody =
-            try JSONEncoder().encode(
-                body
-            )
-
-        NetworkLogger.logRequest(
-            urlRequest
-        )
+        NetworkLogger.logRequest(urlRequest)
 
         let startTime = Date()
 
         do {
-            let (data, response) =
-                try await session.data(
-                    for: urlRequest
-                )
+            let (data, response) = try await session.data(
+                for: urlRequest
+            )
 
-            guard let httpResponse =
-                response as? HTTPURLResponse
-            else {
+            guard let httpResponse = response as? HTTPURLResponse else {
                 throw RegistrationRemoteError.invalidResponse
             }
 
@@ -109,10 +105,7 @@ final class RegistrationRemoteDataSource:
                 request: urlRequest,
                 response: httpResponse,
                 data: data,
-                duration:
-                    Date().timeIntervalSince(
-                        startTime
-                    )
+                duration: Date().timeIntervalSince(startTime)
             )
 
             guard 200..<300 ~= httpResponse.statusCode else {
@@ -142,25 +135,20 @@ final class RegistrationRemoteDataSource:
         }
     }
 
-    private func backendMessage(
-        from data: Data
-    ) -> String {
+    private func backendMessage(from data: Data) -> String {
         guard
-            let object =
-                try? JSONSerialization.jsonObject(
-                    with: data
-                ) as? [String: Any]
+            let object = try? JSONSerialization.jsonObject(
+                with: data
+            ) as? [String: Any]
         else {
             return ""
         }
 
-        if let error =
-            object["error"] as? String {
+        if let error = object["error"] as? String {
             return error
         }
 
-        if let message =
-            object["message"] as? String {
+        if let message = object["message"] as? String {
             return message
         }
 
@@ -168,11 +156,10 @@ final class RegistrationRemoteDataSource:
     }
 }
 
-enum RegistrationRemoteError:
-    LocalizedError
-{
+enum RegistrationRemoteError: LocalizedError {
     case invalidURL
     case invalidResponse
+    case encryptionFailed
     case httpError(Int, String)
     case decodingError(String)
 
@@ -183,6 +170,9 @@ enum RegistrationRemoteError:
 
         case .invalidResponse:
             return "La respuesta del servidor no es válida."
+
+        case .encryptionFailed:
+            return "No fue posible proteger la contraseña."
 
         case let .httpError(code, message):
             return message.isEmpty

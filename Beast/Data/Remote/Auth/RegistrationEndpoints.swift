@@ -1,8 +1,9 @@
 import Foundation
 
 enum RegistrationEndpoints {
-    static let baseURL =
-        "https://us-central1-bookings-spinnings.cloudfunctions.net"
+    private static var baseURL: String {
+        AppConfiguration.baseURL
+    }
 
     static var sendOtp: String {
         "\(baseURL)/sendOtp"
