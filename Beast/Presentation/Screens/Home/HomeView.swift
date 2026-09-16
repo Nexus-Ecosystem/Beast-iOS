@@ -4,184 +4,104 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @State private var selectedReservationPage = 0
 
+    private let headerHeight: CGFloat = 68
+    private let headerTopSpacing: CGFloat = 8
+
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
             BeastColors.background
                 .ignoresSafeArea()
 
-            ScrollView(
-                showsIndicators: false
-            ) {
-                LazyVStack(
-                    spacing: 0
-                ) {
-                    header
+            content
 
-                    if viewModel.upcomingClasses.isEmpty {
-                        noUpcomingClasses
-                    } else {
-                        upcomingClassesSection
-                    }
+            floatingHeader
 
-                    if viewModel.classHistory.isEmpty {
-                        noHistorySection
-                    } else {
-                        historySection
-                    }
-
-                    Spacer()
-                        .frame(
-                            height: 120
-                        )
-                }
-            }
-
-            VStack {
-                Spacer()
-
-                HStack {
-                    Spacer()
-
-                    NavigationLink {
-                        QrCheckInView()
-                    } label: {
-                        Image(
-                            systemName: "qrcode"
-                        )
-                        .font(
-                            .system(
-                                size: 23,
-                                weight: .bold
-                            )
-                        )
-                        .foregroundStyle(
-                            Color.black
-                        )
-                        .frame(
-                            width: 58,
-                            height: 58
-                        )
-                        .background(
-                            RoundedRectangle(
-                                cornerRadius: 14
-                            )
-                            .fill(
-                                BeastColors.yellowPrimary
-                            )
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .padding(
-                        .trailing,
-                        24
-                    )
-                    .padding(
-                        .bottom,
-                        20
-                    )
-                }
-            }
+            qrButton
 
             if viewModel.isLoading {
                 BeastLoadingOverlay()
+                    .zIndex(100)
             }
         }
         .task {
             await viewModel.load()
         }
+        .onDisappear {
+            viewModel.stop()
+        }
+    }
+
+    // MARK: - Main Content
+
+    private var content: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 0) {
+                if viewModel.upcomingClasses.isEmpty {
+                    noUpcomingClasses
+                } else {
+                    upcomingClassesSection
+                }
+
+                if viewModel.classHistory.isEmpty {
+                    noHistorySection
+                } else {
+                    historySection
+                }
+
+                Spacer()
+                    .frame(height: 120)
+            }
+            // Espacio inicial para que al abrir Home
+            // la primera card no quede tapada por el header.
+            //
+            // Al hacer scroll, este espacio desaparece
+            // y el contenido pasa DETRÁS del glass.
+            .padding(
+                .top,
+                headerHeight + headerTopSpacing + 20
+            )
+        }
+        .scrollContentBackground(.hidden)
         .refreshable {
             await viewModel.refresh()
         }
     }
 
-    private var header: some View {
-        HStack {
-            Text(formattedDate)
-                .font(
-                    .system(
-                        size: 22,
-                        weight: .black
-                    )
-                )
-                .italic()
-                .foregroundStyle(
-                    BeastColors.primary
-                )
+    // MARK: - Floating Glass Header
 
-            Spacer()
-        }
-        .padding(
-            .horizontal,
-            24
+    private var floatingHeader: some View {
+        HomeDateHeader(
+            branchName: viewModel.branchName
         )
-        .padding(
-            .top,
-            16
-        )
-        .padding(
-            .bottom,
-            10
-        )
+        .padding(.horizontal, 20)
+        .padding(.top, headerTopSpacing)
+        .zIndex(50)
     }
 
-    private var upcomingClassesSection: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 0
-        ) {
-            VStack(
-                alignment: .leading,
-                spacing: 4
-            ) {
-                Text("Clases Agendadas")
-                    .font(
-                        .system(
-                            size: 10,
-                            weight: .bold
-                        )
-                    )
-                    .foregroundStyle(
-                        BeastColors.primary
-                    )
+    // MARK: - Upcoming
 
-                HStack(
-                    alignment: .bottom
-                ) {
+    private var upcomingClassesSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Clases Agendadas")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(BeastColors.primary)
+
+                HStack(alignment: .bottom) {
                     Text("Próximas")
-                        .font(
-                            .system(
-                                size: 30,
-                                weight: .black
-                            )
-                        )
+                        .font(.system(size: 30, weight: .black))
                         .italic()
-                        .foregroundStyle(
-                            BeastColors.textPrimary
-                        )
+                        .foregroundStyle(BeastColors.textPrimary)
 
                     Spacer()
 
-                    Text(
-                        "\(viewModel.upcomingClasses.count) \(viewModel.upcomingClasses.count == 1 ? "clase hoy" : "clases hoy")"
-                    )
-                    .font(
-                        .system(
-                            size: 11
-                        )
-                    )
-                    .foregroundStyle(
-                        BeastColors.textSecondary
-                    )
-                    .padding(
-                        .bottom,
-                        5
-                    )
+                    Text(upcomingClassesCountText)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(BeastColors.textSecondary)
+                        .padding(.bottom, 5)
                 }
             }
-            .padding(
-                .horizontal,
-                24
-            )
+            .padding(.horizontal, 24)
 
             TabView(
                 selection: $selectedReservationPage
@@ -195,150 +115,153 @@ struct HomeView: View {
                     UpcomingReservationCard(
                         reservation: reservation
                     )
-                    .padding(
-                        .horizontal,
-                        24
-                    )
+                    .padding(.horizontal, 24)
                     .tag(index)
                 }
             }
             .tabViewStyle(
-                .page(
-                    indexDisplayMode: .never
-                )
+                .page(indexDisplayMode: .never)
             )
-            .frame(
-                height: 285
-            )
-            .padding(
-                .top,
-                12
-            )
+            .frame(height: 285)
+            .padding(.top, 12)
 
             if viewModel.upcomingClasses.count > 1 {
-                HStack(
-                    spacing: 8
-                ) {
-                    ForEach(
-                        viewModel.upcomingClasses.indices,
-                        id: \.self
-                    ) { index in
-                        Circle()
-                            .fill(
-                                index == selectedReservationPage
-                                ? BeastColors.primary
-                                : BeastColors.textSecondary.opacity(
-                                    0.25
-                                )
-                            )
-                            .frame(
-                                width:
-                                    index == selectedReservationPage
-                                    ? 8
-                                    : 6,
-                                height:
-                                    index == selectedReservationPage
-                                    ? 8
-                                    : 6
-                            )
-                    }
-                }
-                .frame(
-                    maxWidth: .infinity
-                )
-                .padding(
-                    .top,
-                    4
-                )
+                pageIndicator
             }
         }
-        .padding(
-            .top,
-            8
-        )
+        .padding(.top, 18)
     }
 
-    private var noUpcomingClasses: some View {
-        VStack(
-            spacing: 20
-        ) {
-            ZStack {
+    private var upcomingClassesCountText: String {
+        let count = viewModel.upcomingClasses.count
+
+        return "\(count) \(count == 1 ? "clase hoy" : "clases hoy")"
+    }
+
+    private var pageIndicator: some View {
+        HStack(spacing: 8) {
+            ForEach(
+                viewModel.upcomingClasses.indices,
+                id: \.self
+            ) { index in
                 Circle()
                     .fill(
-                        BeastColors.surface
+                        index == selectedReservationPage
+                            ? BeastColors.primary
+                            : BeastColors.textSecondary
+                                .opacity(0.25)
                     )
                     .frame(
-                        width: 64,
-                        height: 64
+                        width:
+                            index == selectedReservationPage
+                            ? 8
+                            : 6,
+                        height:
+                            index == selectedReservationPage
+                            ? 8
+                            : 6
                     )
-
-                Image(
-                    systemName: "dumbbell.fill"
-                )
-                .font(
-                    .system(
-                        size: 28
-                    )
-                )
-                .foregroundStyle(
-                    BeastColors.primary
-                )
             }
-
-            Text("NO HAY PRÓXIMA CLASE")
-                .font(
-                    .system(
-                        size: 18,
-                        weight: .black
-                    )
-                )
-                .foregroundStyle(
-                    BeastColors.textPrimary
-                )
-
-            Text(
-                "¿Listo para tu siguiente reto?\nDescubre las clases de cada día y agenda en el horario que más te convenga."
-            )
-            .font(
-                .system(
-                    size: 12
-                )
-            )
-            .foregroundStyle(
-                BeastColors.textSecondary
-            )
-            .multilineTextAlignment(
-                .center
-            )
-            .lineSpacing(4)
         }
-        .frame(
-            maxWidth: .infinity
-        )
-        .padding(32)
-        .background(
-            RoundedRectangle(
-                cornerRadius: 28
-            )
-            .fill(
-                BeastColors.surface
-            )
-        )
-        .padding(
-            .horizontal,
-            24
-        )
-        .padding(
-            .top,
-            16
-        )
+        .frame(maxWidth: .infinity)
+        .padding(.top, 4)
     }
 
+    // MARK: - Empty Upcoming
+
+    private var noUpcomingClasses: some View {
+        Button {
+            openSchedule()
+        } label: {
+            VStack(spacing: 0) {
+                Image(systemName: "dumbbell.fill")
+                    .font(
+                        .system(
+                            size: 25,
+                            weight: .semibold
+                        )
+                    )
+                    .foregroundStyle(
+                        BeastColors.textSecondary
+                    )
+
+                Text("NO HAY PRÓXIMA CLASE")
+                    .font(
+                        .system(
+                            size: 18,
+                            weight: .black
+                        )
+                    )
+                    .foregroundStyle(
+                        BeastColors.textPrimary
+                    )
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 18)
+
+                Text("¿Listo para tu siguiente reto?")
+                    .font(
+                        .system(
+                            size: 13,
+                            weight: .medium
+                        )
+                    )
+                    .foregroundStyle(
+                        BeastColors.textSecondary
+                    )
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
+
+                Text(
+                    """
+                    Descubre las clases de cada día y agenda \
+                    en el horario que más te convenga.
+                    """
+                )
+                .font(.system(size: 12))
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.horizontal, 16)
+                .padding(.top, 3)
+
+                HStack(spacing: 7) {
+                    Text("Explora más clases")
+
+                    Image(systemName: "arrow.right")
+                }
+                .font(
+                    .system(
+                        size: 12,
+                        weight: .bold
+                    )
+                )
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
+                .padding(.top, 22)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 28)
+            .background {
+                RoundedRectangle(
+                    cornerRadius: 28,
+                    style: .continuous
+                )
+                .fill(BeastColors.surface)
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 24)
+        .padding(.top, 18)
+    }
+
+    // MARK: - History
+
     private var historySection: some View {
-        VStack(
-            alignment: .leading,
-            spacing: 14
-        ) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("HISTÓRICO")
                     .font(
@@ -368,9 +291,7 @@ struct HomeView: View {
                             BeastColors.primary
                         )
                 }
-                .buttonStyle(
-                    .plain
-                )
+                .buttonStyle(.plain)
             }
 
             ForEach(
@@ -384,92 +305,122 @@ struct HomeView: View {
                 )
             }
         }
-        .padding(
-            .horizontal,
-            24
-        )
-        .padding(
-            .top,
-            24
-        )
+        .padding(.horizontal, 24)
+        .padding(.top, 26)
     }
 
+    // MARK: - Empty History
+
     private var noHistorySection: some View {
-        VStack(
-            spacing: 18
-        ) {
-            Image(
-                systemName: "dumbbell.fill"
-            )
-            .font(
-                .system(
-                    size: 28
+        VStack(spacing: 0) {
+            Image(systemName: "dumbbell.fill")
+                .font(
+                    .system(
+                        size: 25,
+                        weight: .semibold
+                    )
                 )
-            )
-            .foregroundStyle(
-                BeastColors.primary
-            )
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
+
+            Text("No tienes historial de clases")
+                .font(
+                    .system(
+                        size: 18,
+                        weight: .black
+                    )
+                )
+                .foregroundStyle(
+                    BeastColors.textPrimary
+                )
+                .multilineTextAlignment(.center)
+                .padding(.top, 18)
 
             Text(
-                "No tienes historial de clases"
+                """
+                Te invitamos a registrar tu primera clase \
+                en la sección de AGENDA.
+                """
             )
-            .font(
-                .system(
-                    size: 16,
-                    weight: .black
-                )
-            )
-            .foregroundStyle(
-                BeastColors.textPrimary
-            )
-
-            Text(
-                "Te invitamos a registrar tu primera clase en la sección de AGENDA."
-            )
-            .font(
-                .system(
-                    size: 11
-                )
-            )
+            .font(.system(size: 12))
             .foregroundStyle(
                 BeastColors.textSecondary
             )
-            .multilineTextAlignment(
-                .center
-            )
+            .multilineTextAlignment(.center)
+            .lineSpacing(3)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
         }
-        .frame(
-            maxWidth: .infinity
-        )
-        .padding(32)
-        .background(
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 28)
+        .background {
             RoundedRectangle(
-                cornerRadius: 28
+                cornerRadius: 28,
+                style: .continuous
             )
-            .fill(
-                BeastColors.surface
-            )
-        )
-        .padding(
-            .horizontal,
-            24
-        )
-        .padding(
-            .top,
-            24
-        )
+            .fill(BeastColors.surface)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 24)
     }
 
-    private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(
-            identifier: "es_MX"
-        )
-        formatter.dateFormat =
-            "d 'de' MMMM 'del' yyyy"
+    // MARK: - QR
 
-        return formatter.string(
-            from: Date()
+    private var qrButton: some View {
+        VStack {
+            Spacer()
+
+            HStack {
+                Spacer()
+
+                NavigationLink {
+                    QrCheckInView()
+                } label: {
+                    Image(systemName: "qrcode")
+                        .font(
+                            .system(
+                                size: 23,
+                                weight: .bold
+                            )
+                        )
+                        .foregroundStyle(
+                            BeastColors.buttonText
+                        )
+                        .frame(
+                            width: 58,
+                            height: 58
+                        )
+                        .background {
+                            RoundedRectangle(
+                                cornerRadius: 14,
+                                style: .continuous
+                            )
+                            .fill(
+                                BeastColors.yellowPrimary
+                            )
+                        }
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 24)
+                .padding(.bottom, 20)
+            }
+        }
+        .zIndex(40)
+    }
+
+    // MARK: - Navigation
+
+    private func openSchedule() {
+        NotificationCenter.default.post(
+            name: .openScheduleTab,
+            object: nil
         )
     }
+}
+
+extension Notification.Name {
+    static let openScheduleTab =
+        Notification.Name("openScheduleTab")
 }

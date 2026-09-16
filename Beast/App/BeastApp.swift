@@ -1,8 +1,14 @@
 import SwiftUI
+import NexusDesignSystem
 import FirebaseCore
+import FirebaseMessaging
+import UserNotifications
 
 @main
 struct BeastApp: App {
+
+    @UIApplicationDelegateAdaptor(AppDelegate.self)
+    private var appDelegate
 
     init() {
         configureFirebase()
@@ -10,7 +16,14 @@ struct BeastApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            NexusAppRoot(
+                app: .nexus,
+                showsSplash: true,
+                isReady: true,
+                splashMinimumDuration: 1.5
+            ) {
+                RootView()
+            }
         }
     }
 
@@ -27,16 +40,11 @@ struct BeastApp: App {
                 contentsOfFile: filePath
             )
         else {
-            fatalError("No se encontró la configuración de Firebase")
+            fatalError(
+                "No se encontró la configuración de Firebase"
+            )
         }
 
         FirebaseApp.configure(options: options)
-
-        print("""
-        🔥 FIREBASE CONFIGURADO
-        config: \(configName)
-        projectID: \(options.projectID ?? "nil")
-        storageBucket: \(options.storageBucket ?? "nil")
-        """)
     }
 }

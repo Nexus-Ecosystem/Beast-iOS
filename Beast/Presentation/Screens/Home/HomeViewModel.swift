@@ -6,6 +6,7 @@ final class HomeViewModel: ObservableObject {
     @Published private(set) var upcomingClasses: [ClassItemEntity] = []
     @Published private(set) var classHistory: [ClassItemEntity] = []
     @Published private(set) var profile: AllDataProfileUserSystem?
+    @Published private(set) var branchName = ""
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
 
@@ -24,71 +25,59 @@ final class HomeViewModel: ObservableObject {
         observeReservationChanges()
     }
 
+    // MARK: - Public
+
     func load() async {
         isLoading = true
         errorMessage = nil
 
-        profile = storage.getProfile()
-
-        guard let profile else {
+        defer {
             isLoading = false
+        }
+
+        guard let storedProfile = storage.getProfile() else {
+            clearData()
             errorMessage = "No se encontró la información del usuario."
             return
         }
 
-        guard
-            !profile.email.isEmpty,
-            let branch = profile.branches.first,
-            !branch.isEmpty
+        profile = storedProfile
+
+        guard !storedProfile.email.isEmpty else {
+            clearScheduleData()
+            errorMessage = "No se encontró el correo del usuario."
+            return
+        }
+
+        guard let branch = storedProfile.branches
+            .first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
         else {
-            isLoading = false
+            branchName = ""
+            clearScheduleData()
             errorMessage = "No se encontró una sucursal asociada."
             return
         }
 
-        let day = Self.dayFormatter.string(
-            from: Date()
-        )
+        branchName = branch.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        let month = Self.monthFormatter.string(
-            from: Date()
-        )
+        let currentDate = Date()
+        let day = Self.dayFormatter.string(from: currentDate)
+        let month = Self.monthFormatter.string(from: currentDate)
 
-        await refreshLocalData(
-            day: day
-        )
+        await refreshLocalData(day: day)
 
-        schedulesUseCase.observePendingSchedules(
-            branch: branch,
+        observePendingSchedules(
+            branch: branchName,
             month: month,
-            email: profile.email,
-            onChange: { [weak self] in
-                guard let self else { return }
-
-                Task { @MainActor in
-                    await self.refreshLocalData(
-                        day: Self.dayFormatter.string(
-                            from: Date()
-                        )
-                    )
-                }
-            },
-            onError: { [weak self] error in
-                Task { @MainActor in
-                    self?.errorMessage =
-                        error.localizedDescription
-                }
-            }
+            email: storedProfile.email
         )
-
-        isLoading = false
     }
 
     func refresh() async {
+        errorMessage = nil
+
         await refreshLocalData(
-            day: Self.dayFormatter.string(
-                from: Date()
-            )
+            day: Self.dayFormatter.string(from: Date())
         )
     }
 
@@ -100,58 +89,87 @@ final class HomeViewModel: ObservableObject {
         errorMessage = nil
     }
 
+    // MARK: - Pending Schedules
+
+    private func observePendingSchedules(
+        branch: String,
+        month: String,
+        email: String
+    ) {
+        schedulesUseCase.stopPendingSchedulesObserver()
+
+        schedulesUseCase.observePendingSchedules(
+            branch: branch,
+            month: month,
+            email: email,
+            onChange: { [weak self] in
+                guard let self else { return }
+
+                Task { @MainActor in
+                    await self.refreshLocalData(
+                        day: Self.dayFormatter.string(from: Date())
+                    )
+                }
+            },
+            onError: { [weak self] error in
+                Task { @MainActor in
+                    self?.errorMessage = error.localizedDescription
+                }
+            }
+        )
+    }
+
+    // MARK: - Reservation Changes
+
     private func observeReservationChanges() {
         NotificationCenter.default
-            .publisher(
-                for: .reservationsDidChange
-            )
-            .receive(
-                on: DispatchQueue.main
-            )
+            .publisher(for: .reservationsDidChange)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 guard let self else { return }
 
                 Task { @MainActor in
                     await self.refreshLocalData(
-                        day: Self.dayFormatter.string(
-                            from: Date()
-                        )
+                        day: Self.dayFormatter.string(from: Date())
                     )
                 }
             }
-            .store(
-                in: &cancellables
-            )
+            .store(in: &cancellables)
     }
 
-    private func refreshLocalData(
-        day: String
-    ) async {
+    // MARK: - Data
+
+    private func refreshLocalData(day: String) async {
         upcomingClasses = await schedulesUseCase
-            .upcomingReservations(
-                day: day
-            )
+            .upcomingReservations(day: day)
 
         classHistory = await schedulesUseCase
-            .reservationHistory(
-                day: day
-            )
+            .reservationHistory(day: day)
     }
+
+    private func clearScheduleData() {
+        upcomingClasses = []
+        classHistory = []
+    }
+
+    private func clearData() {
+        profile = nil
+        branchName = ""
+        clearScheduleData()
+    }
+
+    // MARK: - Formatters
 
     private static let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(
-            identifier: "en_US_POSIX"
-        )
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
 
     private static let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(
-            identifier: "en_US_POSIX"
-        )
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM"
         return formatter
     }()
