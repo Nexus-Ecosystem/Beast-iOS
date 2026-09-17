@@ -3,11 +3,17 @@ import Combine
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
-    @Published private(set) var profile: ProfileDisplayModel = .empty
-    @Published private(set) var isLoading = false
+    @Published private(set)
+    var profile: ProfileDisplayModel = .empty
 
-    @Published var showLogoutConfirmation = false
-    @Published var errorMessage: String?
+    @Published private(set)
+    var isLoading = false
+
+    @Published
+    var showLogoutConfirmation = false
+
+    @Published
+    var errorMessage: String?
 
     private let useCase: ProfileUseCase
 
@@ -19,37 +25,49 @@ final class ProfileViewModel: ObservableObject {
         self.useCase = useCase
     }
 
+    // MARK: - Lifecycle
+
     func onAppear() {
         guard !didStart else {
             return
         }
 
         didStart = true
-        isLoading = true
-        errorMessage = nil
+        startProfileObservation()
+    }
 
+    func refresh() async {
         guard let localProfile = useCase.localProfile() else {
-            isLoading = false
             errorMessage =
                 "No se encontró la información del usuario."
             return
         }
 
         guard !localProfile.email.isEmpty else {
-            isLoading = false
             errorMessage =
                 "No se encontró el correo del usuario."
             return
         }
 
-        loadInitialProfile(
-            localProfile
-        )
+        isLoading = true
+        errorMessage = nil
+
+        loadInitialProfile(localProfile)
+
+        useCase.stopProfileObserver()
 
         subscribe(
             email: localProfile.email
         )
     }
+
+    func stop() {
+        didStart = false
+
+        useCase.stopProfileObserver()
+    }
+
+    // MARK: - Logout
 
     func requestLogout() {
         showLogoutConfirmation = true
@@ -68,13 +86,41 @@ final class ProfileViewModel: ObservableObject {
         isLoading = false
     }
 
+    // MARK: - Error
+
     func resetError() {
         errorMessage = nil
     }
 
-    func stop() {
-        didStart = false
-        useCase.stopProfileObserver()
+    // MARK: - Profile
+
+    private func startProfileObservation() {
+        isLoading = true
+        errorMessage = nil
+
+        guard let localProfile = useCase.localProfile() else {
+            isLoading = false
+
+            errorMessage =
+                "No se encontró la información del usuario."
+
+            return
+        }
+
+        guard !localProfile.email.isEmpty else {
+            isLoading = false
+
+            errorMessage =
+                "No se encontró el correo del usuario."
+
+            return
+        }
+
+        loadInitialProfile(localProfile)
+
+        subscribe(
+            email: localProfile.email
+        )
     }
 
     private func subscribe(
@@ -89,6 +135,7 @@ final class ProfileViewModel: ObservableObject {
 
                 self.profile = profile
                 self.isLoading = false
+                self.errorMessage = nil
             },
             onError: { [weak self] error in
                 guard let self else {
@@ -96,6 +143,7 @@ final class ProfileViewModel: ObservableObject {
                 }
 
                 self.isLoading = false
+
                 self.errorMessage =
                     error.localizedDescription
             }
@@ -113,14 +161,18 @@ final class ProfileViewModel: ObservableObject {
                 profile.fotoPerfil.isEmpty
                 ? profile.urlPhoto
                 : profile.fotoPerfil,
-            packageId: "",
+            packageId:
+                profile.activePackage.idPaquete,
             packageName:
                 profile.membershipName,
             packageExpiration:
                 profile.fechaPago,
-            packageType: 0,
-            classesTaken: 0,
-            totalClasses: 0,
+            packageType:
+                profile.activePackage.tipoPaquete,
+            classesTaken:
+                profile.activePackage.clasesTomadas,
+            totalClasses:
+                profile.activePackage.clasesTotales,
             extraCredits: 0,
             responsiveSigned:
                 profile.responsiveSigned,

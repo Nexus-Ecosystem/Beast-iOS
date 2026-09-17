@@ -3,26 +3,63 @@ import Combine
 
 @MainActor
 final class PackagesViewModel: ObservableObject {
-    @Published private(set) var packages: [PaqueteMemberShipModel] = []
-    @Published private(set) var profile: AllDataProfileUserSystem?
-    @Published private(set) var isLoading = false
 
-    @Published var selectedPackage: PaqueteMemberShipModel?
-    @Published var showPurchaseConfirmation = false
-    @Published var errorMessage: String?
+    enum LoadState: Equatable {
+        case idle
+        case loading
+        case loaded
+        case failed
+    }
+
+    @Published private(set)
+    var packages: [PaqueteMemberShipModel] = []
+
+    @Published private(set)
+    var profile: AllDataProfileUserSystem?
+
+    @Published private(set)
+    var loadState: LoadState = .idle
+
+    @Published
+    var selectedPackage: PaqueteMemberShipModel?
+
+    @Published
+    var showPurchaseConfirmation = false
+
+    @Published
+    var errorMessage: String?
 
     private let schedulesUseCase: SchedulesUseCase
     private let storage: AppStorageManager
+
+    private var hasLoadedOnce = false
 
     init(
         schedulesUseCase: SchedulesUseCase = SchedulesUseCase(),
         storage: AppStorageManager = .shared
     ) {
-        self.schedulesUseCase =
-            schedulesUseCase
-        self.storage =
-            storage
+        self.schedulesUseCase = schedulesUseCase
+        self.storage = storage
     }
+
+    // MARK: - State
+
+    var isLoading: Bool {
+        loadState == .loading
+    }
+
+    var hasFinishedInitialLoad: Bool {
+        loadState == .loaded ||
+        loadState == .failed
+    }
+
+    var shouldShowEmptyState: Bool {
+        hasFinishedInitialLoad &&
+        errorMessage == nil &&
+        packages.isEmpty
+    }
+
+    // MARK: - Profile
 
     var userName: String {
         profile?.fullName ?? ""
@@ -31,6 +68,8 @@ final class PackagesViewModel: ObservableObject {
     var activePackageId: String {
         profile?.activePackage.idPaquete ?? ""
     }
+
+    // MARK: - Membership
 
     var hasActivePackage: Bool {
         guard !activePackageId.isEmpty else {
@@ -43,12 +82,11 @@ final class PackagesViewModel: ObservableObject {
     }
 
     var featuredPackage: PaqueteMemberShipModel? {
-        if !activePackageId.isEmpty,
-           let activePackage =
-            packages.first(
+        if
+            !activePackageId.isEmpty,
+            let activePackage = packages.first(
                 where: {
-                    $0.idPaquete ==
-                    activePackageId
+                    $0.idPaquete == activePackageId
                 }
             )
         {
@@ -64,61 +102,117 @@ final class PackagesViewModel: ObservableObject {
         }
 
         return packages.filter {
-            $0.idPaquete !=
-            featuredPackage.idPaquete
+            $0.idPaquete != featuredPackage.idPaquete
         }
     }
 
+    // MARK: - Load
+
     func load() async {
-        isLoading = true
-        errorMessage = nil
-
-        profile =
-            storage.getProfile()
-
-        guard let profile else {
-            isLoading = false
-            errorMessage =
-                "No se encontró la información del usuario."
+        guard !hasLoadedOnce else {
             return
         }
 
-        guard let branch =
-            profile.branches.first
-        else {
-            isLoading = false
-            errorMessage =
-                "No se encontró una sucursal asociada."
-            return
-        }
-
-        packages =
-            await schedulesUseCase
-                .memberships(
-                    branch: branch
-                )
-
-        isLoading = false
+        await loadPackages(
+            showLoader: true
+        )
     }
 
     func refresh() async {
-        profile =
-            storage.getProfile()
+        await loadPackages(
+            showLoader: packages.isEmpty
+        )
+    }
 
-        guard
-            let profile,
-            let branch =
-                profile.branches.first
-        else {
+    private func loadPackages(
+        showLoader: Bool
+    ) async {
+        if showLoader {
+            loadState = .loading
+        }
+
+        errorMessage = nil
+
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("📦 PACKAGES: INICIANDO CARGA")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+        guard let storedProfile = storage.getProfile() else {
+            print("❌ PACKAGES: storage.getProfile() == nil")
+
+            profile = nil
+            packages = []
+            loadState = .failed
+            hasLoadedOnce = true
+
+            errorMessage =
+                "No se encontró la información del usuario."
+
             return
         }
 
-        packages =
-            await schedulesUseCase
-                .memberships(
-                    branch: branch
-                )
+        profile = storedProfile
+
+        print("✅ PACKAGES: perfil encontrado")
+        print("👤 Usuario:", storedProfile.fullName)
+        print("📧 Email:", storedProfile.email)
+        print(
+            "⭐ Paquete activo:",
+            storedProfile.activePackage.idPaquete
+        )
+        print(
+            "🏢 Sucursales encontradas:",
+            storedProfile.branches.count
+        )
+
+        guard let branch = storedProfile.branches.first else {
+            print("❌ PACKAGES: perfil sin sucursales")
+
+            packages = []
+            loadState = .failed
+            hasLoadedOnce = true
+
+            errorMessage =
+                "No se encontró una sucursal asociada."
+
+            return
+        }
+
+        print("📍 PACKAGES: branch encontrado")
+        print("📍 Branch:", branch)
+
+        print("🔥 PACKAGES: consultando membresías...")
+
+        let loadedPackages =
+            await schedulesUseCase.memberships(
+                branch: branch
+            )
+
+        print(
+            "📦 PACKAGES: paquetes recibidos:",
+            loadedPackages.count
+        )
+
+        for package in loadedPackages {
+            print(
+                "   📦",
+                package.idPaquete
+            )
+        }
+
+        packages = loadedPackages
+
+        loadState = .loaded
+        hasLoadedOnce = true
+
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("✅ PACKAGES: CARGA TERMINADA")
+        print("📦 Total:", packages.count)
+        print("⭐ Activo:", activePackageId)
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     }
+
+    // MARK: - Selection
 
     func selectPackage(
         _ package: PaqueteMemberShipModel
@@ -127,20 +221,16 @@ final class PackagesViewModel: ObservableObject {
             return
         }
 
-        selectedPackage =
-            package
-
-        showPurchaseConfirmation =
-            true
+        selectedPackage = package
+        showPurchaseConfirmation = true
     }
 
     func dismissPurchaseConfirmation() {
-        showPurchaseConfirmation =
-            false
-
-        selectedPackage =
-            nil
+        showPurchaseConfirmation = false
+        selectedPackage = nil
     }
+
+    // MARK: - Active Package
 
     func isActive(
         _ package: PaqueteMemberShipModel
@@ -191,10 +281,11 @@ final class PackagesViewModel: ObservableObject {
             return false
         }
 
-        guard let expirationDate =
-            Self.dateFormatter.date(
-                from: expiration
-            )
+        guard
+            let expirationDate =
+                Self.dateFormatter.date(
+                    from: expiration
+                )
         else {
             return false
         }
@@ -209,9 +300,10 @@ final class PackagesViewModel: ObservableObject {
                 for: expirationDate
             )
 
-        return today >
-            expirationDay
+        return today > expirationDay
     }
+
+    // MARK: - Purchase
 
     func canBuy(
         _ package: PaqueteMemberShipModel
@@ -238,34 +330,30 @@ final class PackagesViewModel: ObservableObject {
             return "ADQUIRIR"
         }
 
-        if isExpired(package) {
-            return "RENOVAR"
-        }
-
-        if isPackageEmpty(package) {
+        if isExpired(package) ||
+            isPackageEmpty(package) {
             return "RENOVAR"
         }
 
         return "YA TIENES ESTE PLAN"
     }
 
+    // MARK: - Error
+
     func resetError() {
-        errorMessage =
-            nil
+        errorMessage = nil
     }
 
+    // MARK: - Date
+
     private static let dateFormatter: DateFormatter = {
-        let formatter =
-            DateFormatter()
+        let formatter = DateFormatter()
 
-        formatter.locale =
-            Locale(
-                identifier:
-                    "en_US_POSIX"
-            )
+        formatter.locale = Locale(
+            identifier: "en_US_POSIX"
+        )
 
-        formatter.dateFormat =
-            "yyyy-MM-dd"
+        formatter.dateFormat = "yyyy-MM-dd"
 
         return formatter
     }()
