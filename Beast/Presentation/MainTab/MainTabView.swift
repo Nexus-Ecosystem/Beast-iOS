@@ -10,6 +10,9 @@ struct MainTabView: View {
 
     @State private var bikeSelectionContext: BikeSelectionContext?
     @State private var showBikeSelection = false
+
+    // MARK: - Responsiva
+
     @State private var showSignature = false
     @State private var hasValidatedResponsive = false
 
@@ -19,59 +22,10 @@ struct MainTabView: View {
                 .ignoresSafeArea()
 
             TabView(selection: $selectedTab) {
-                NavigationStack {
-                    HomeView()
-                }
-                .tabItem {
-                    Image(systemName: MainTab.home.icon)
-                }
-                .tag(MainTab.home)
-
-                NavigationStack {
-                    ScheduleView(
-                        viewModel: scheduleViewModel,
-                        onSelectBike: { item, day, month in
-                            openBikeSelection(
-                                item: item,
-                                day: day,
-                                month: month
-                            )
-                        }
-                    )
-                    .navigationDestination(isPresented: $showBikeSelection) {
-                        if let context = bikeSelectionContext {
-                            BikeSelectionView(
-                                context: context,
-                                viewModel: BikeSelectionViewModel()
-                            )
-                        }
-                    }
-                }
-                .tabItem {
-                    Image(systemName: MainTab.schedule.icon)
-                }
-                .tag(MainTab.schedule)
-
-                NavigationStack {
-                    PackagesView()
-                }
-                .tabItem {
-                    Image(systemName: MainTab.packages.icon)
-                }
-                .tag(MainTab.packages)
-
-                NavigationStack {
-                    ProfileView(
-                        viewModel: profileViewModel,
-                        onPackages: {
-                            selectedTab = .packages
-                        }
-                    )
-                }
-                .tabItem {
-                    Image(systemName: MainTab.profile.icon)
-                }
-                .tag(MainTab.profile)
+                homeTab
+                scheduleTab
+                packagesTab
+                profileTab
             }
             .tint(Color("BeastTabSelected"))
 
@@ -84,36 +38,107 @@ struct MainTabView: View {
         .fullScreenCover(isPresented: $showSignature) {
             NavigationStack {
                 PrivacySignatureView {
-                    showSignature = false
+                    signatureCompleted()
                 }
             }
         }
         .ignoresSafeArea(.keyboard)
         .onAppear {
             configureTabBar()
-            profileViewModel.onAppear()
+            loadProfile()
         }
-        .onChange(of: profileViewModel.profile.email) { _, email in
-            guard !email.isEmpty else { return }
+        .onChange(of: profileViewModel.isLoading) { _, isLoading in
+            guard !isLoading else {
+                return
+            }
+
             validateResponsiveIfNeeded()
         }
-        .onChange(of: profileViewModel.profile.responsiveSigned) { _, signed in
-            guard hasValidatedResponsive else { return }
-
-            if signed {
-                showSignature = false
-            }
+        .onChange(
+            of: profileViewModel.profile.responsiveSigned
+        ) { _, signed in
+            responsiveSignedChanged(signed)
         }
         .onChange(of: colorScheme) { _, _ in
             configureTabBar()
         }
     }
 
+    // MARK: - Tabs
+
+    private var homeTab: some View {
+        NavigationStack {
+            HomeView()
+        }
+        .tabItem {
+            Image(systemName: MainTab.home.icon)
+        }
+        .tag(MainTab.home)
+    }
+
+    private var scheduleTab: some View {
+        NavigationStack {
+            ScheduleView(
+                viewModel: scheduleViewModel,
+                onSelectBike: { item, day, month in
+                    openBikeSelection(
+                        item: item,
+                        day: day,
+                        month: month
+                    )
+                }
+            )
+            .navigationDestination(
+                isPresented: $showBikeSelection
+            ) {
+                if let context = bikeSelectionContext {
+                    BikeSelectionView(
+                        context: context,
+                        viewModel: BikeSelectionViewModel()
+                    )
+                }
+            }
+        }
+        .tabItem {
+            Image(systemName: MainTab.schedule.icon)
+        }
+        .tag(MainTab.schedule)
+    }
+
+    private var packagesTab: some View {
+        NavigationStack {
+            PackagesView()
+        }
+        .tabItem {
+            Image(systemName: MainTab.packages.icon)
+        }
+        .tag(MainTab.packages)
+    }
+
+    private var profileTab: some View {
+        NavigationStack {
+            ProfileView(
+                viewModel: profileViewModel,
+                onPackages: {
+                    selectedTab = .packages
+                }
+            )
+        }
+        .tabItem {
+            Image(systemName: MainTab.profile.icon)
+        }
+        .tag(MainTab.profile)
+    }
+
+    // MARK: - Global Overlays
+
     @ViewBuilder
     private var globalOverlays: some View {
         scheduleOverlays
         profileOverlays
     }
+
+    // MARK: - Profile Overlays
 
     @ViewBuilder
     private var profileOverlays: some View {
@@ -149,6 +174,8 @@ struct MainTabView: View {
         }
     }
 
+    // MARK: - Schedule Overlays
+
     @ViewBuilder
     private var scheduleOverlays: some View {
         if
@@ -159,7 +186,8 @@ struct MainTabView: View {
                 item: item,
                 date: scheduleViewModel.selectedDate,
                 title: "CONFIRMAR RESERVA",
-                message: "Asegura tu lugar confirmando esta reserva, no te quedes sin tu lugar !.",
+                message:
+                    "Asegura tu lugar confirmando esta reserva, no te quedes sin tu lugar !.",
                 confirmTitle: "CONFIRMAR",
                 onConfirm: {
                     scheduleViewModel.confirmBooking()
@@ -179,7 +207,8 @@ struct MainTabView: View {
                 item: item,
                 date: scheduleViewModel.selectedDate,
                 title: "RESERVA EXTRA",
-                message: "Ya tienes una clase agendada este día. Esta reserva se tomará como una clase extra.",
+                message:
+                    "Ya tienes una clase agendada este día. Esta reserva se tomará como una clase extra.",
                 confirmTitle: "CONFIRMAR",
                 onConfirm: {
                     scheduleViewModel.confirmExtraBooking()
@@ -199,7 +228,8 @@ struct MainTabView: View {
                 item: item,
                 date: scheduleViewModel.selectedDate,
                 title: "CANCELAR RESERVA",
-                message: "¿Estás seguro de que deseas cancelar tu reserva?",
+                message:
+                    "¿Estás seguro de que deseas cancelar tu reserva?",
                 confirmTitle: "CANCELAR RESERVA",
                 destructive: true,
                 onConfirm: {
@@ -261,16 +291,99 @@ struct MainTabView: View {
         }
     }
 
-    private func validateResponsiveIfNeeded() {
-        guard !hasValidatedResponsive else { return }
-        guard !profileViewModel.profile.email.isEmpty else { return }
+    // MARK: - Profile
 
+    private func loadProfile() {
+        /*
+         No validamos la responsiva aquí.
+
+         profileViewModel.onAppear() inicia la carga del perfil.
+         La decisión se toma cuando isLoading cambia a false.
+         */
+        profileViewModel.onAppear()
+    }
+
+    // MARK: - Responsiva
+
+    private func validateResponsiveIfNeeded() {
+        guard !hasValidatedResponsive else {
+            return
+        }
+
+        /*
+         Nunca tomar una decisión sobre responsiveSigned
+         mientras el perfil siga cargando.
+         */
+        guard !profileViewModel.isLoading else {
+            return
+        }
+
+        /*
+         El email funciona únicamente como comprobación de que
+         ya existe un perfil real.
+
+         Ya NO dispara la validación.
+         */
+        guard !profileViewModel.profile.email.isEmpty else {
+            return
+        }
+
+        /*
+         A partir de este momento el perfil ya fue cargado y
+         podemos confiar en responsiveSigned.
+         */
         hasValidatedResponsive = true
 
-        if !profileViewModel.profile.responsiveSigned {
-            showSignature = true
+        let needsSignature =
+            !profileViewModel.profile.responsiveSigned
+
+        guard needsSignature else {
+            showSignature = false
+            return
+        }
+
+        showSignature = true
+    }
+
+    private func responsiveSignedChanged(
+        _ signed: Bool
+    ) {
+        /*
+         Si todavía no hemos terminado la primera validación,
+         ignoramos cambios intermedios producidos durante
+         la carga del perfil.
+         */
+        guard hasValidatedResponsive else {
+            return
+        }
+
+        /*
+         Si el backend/storage confirma que ya está firmada,
+         aseguramos que la pantalla permanezca cerrada.
+         */
+        if signed {
+            showSignature = false
         }
     }
+
+    private func signatureCompleted() {
+        /*
+         Cerramos inmediatamente la responsiva.
+         */
+        showSignature = false
+
+        /*
+         Volvemos a cargar el perfil para sincronizar
+         responsiveSigned con backend/storage.
+
+         hasValidatedResponsive permanece true, por lo que
+         esta actualización NO puede provocar que vuelva
+         a abrirse durante el refresh.
+         */
+        profileViewModel.onAppear()
+    }
+
+    // MARK: - Bike Selection
 
     private func openBikeSelection(
         item: ClassItem,
@@ -286,16 +399,21 @@ struct MainTabView: View {
         showBikeSelection = true
     }
 
+    // MARK: - Membership
+
     private func openMembershipWhatsApp() {
         let phoneNumber = "523323542375"
-        let message = "¡Hola! Me gustaría renovar o adquirir una membresía/paquete."
+
+        let message =
+            "¡Hola! Me gustaría renovar o adquirir una membresía/paquete."
 
         guard
             let encodedMessage = message.addingPercentEncoding(
                 withAllowedCharacters: .urlQueryAllowed
             ),
             let url = URL(
-                string: "https://wa.me/\(phoneNumber)?text=\(encodedMessage)"
+                string:
+                    "https://wa.me/\(phoneNumber)?text=\(encodedMessage)"
             )
         else {
             return
@@ -304,8 +422,11 @@ struct MainTabView: View {
         UIApplication.shared.open(url)
     }
 
+    // MARK: - Tab Bar
+
     private func configureTabBar() {
         let appearance = UITabBarAppearance()
+
         appearance.configureWithTransparentBackground()
 
         appearance.backgroundEffect = UIBlurEffect(
@@ -317,7 +438,8 @@ struct MainTabView: View {
         )
         .withAlphaComponent(0.94)
 
-        appearance.shadowColor = UIColor.black.withAlphaComponent(0.05)
+        appearance.shadowColor = UIColor.black
+            .withAlphaComponent(0.05)
 
         let itemAppearance = UITabBarItemAppearance()
 
@@ -349,13 +471,23 @@ struct MainTabView: View {
             vertical: 100
         )
 
-        appearance.stackedLayoutAppearance = itemAppearance
-        appearance.inlineLayoutAppearance = itemAppearance
-        appearance.compactInlineLayoutAppearance = itemAppearance
+        appearance.stackedLayoutAppearance =
+            itemAppearance
 
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
+        appearance.inlineLayoutAppearance =
+            itemAppearance
+
+        appearance.compactInlineLayoutAppearance =
+            itemAppearance
+
+        UITabBar.appearance().standardAppearance =
+            appearance
+
+        UITabBar.appearance().scrollEdgeAppearance =
+            appearance
+
         UITabBar.appearance().isTranslucent = true
+
         UITabBar.appearance().itemPositioning = .fill
     }
 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ConfirmStudioDialog: View {
+
     let branch: BranchModel
     let onConfirm: () -> Void
     let onCancel: () -> Void
@@ -10,76 +11,126 @@ struct ConfirmStudioDialog: View {
             Color.black
                 .opacity(0.72)
                 .ignoresSafeArea()
-                .onTapGesture {
-                    onCancel()
+
+            modalContent
+                .overlay(
+                    alignment: .topTrailing
+                ) {
+                    closeButton
+                        .padding(14)
                 }
-
-            VStack(spacing: 0) {
-                imageHeader
-
-                VStack(spacing: 18) {
-                    studioInfoCard
-
-                    Text(
-                        "Puedes elegir más estudios después en tu perfil."
-                    )
-                    .font(
-                        .system(
-                            size: 10,
-                            weight: .medium
-                        )
-                    )
-                    .foregroundStyle(
-                        BeastColors.textSecondary
-                    )
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 8)
-
-                    confirmButton
-                    changeButton
-                }
-                .padding(.horizontal, 18)
-                .padding(.top, 18)
-                .padding(.bottom, 18)
-            }
-            .frame(maxWidth: 320)
-            .background(
-                RoundedRectangle(
-                    cornerRadius: 26,
-                    style: .continuous
-                )
-                .fill(
-                    BeastColors.surface
-                )
-            )
-            .clipShape(
-                RoundedRectangle(
-                    cornerRadius: 26,
-                    style: .continuous
-                )
-            )
-            .overlay(
-                RoundedRectangle(
-                    cornerRadius: 26,
-                    style: .continuous
-                )
-                .stroke(
-                    BeastColors.border.opacity(0.7),
-                    lineWidth: 1
-                )
-            )
-            .shadow(
-                color: .black.opacity(0.35),
-                radius: 24,
-                x: 0,
-                y: 14
-            )
-            .padding(.horizontal, 28)
+                .padding(.horizontal, 28)
         }
     }
 
+    // MARK: - Modal
+
+    private var modalContent: some View {
+        VStack(spacing: 0) {
+            imageHeader
+
+            VStack(spacing: 18) {
+                studioInfoCard
+
+                Text(
+                    "Puedes elegir más estudios después en tu perfil."
+                )
+                .font(
+                    .system(
+                        size: 10,
+                        weight: .medium
+                    )
+                )
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+
+                confirmButton
+
+                changeButton
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 18)
+            .padding(.bottom, 18)
+        }
+        .frame(maxWidth: 320)
+        .background(
+            RoundedRectangle(
+                cornerRadius: 26,
+                style: .continuous
+            )
+            .fill(
+                BeastColors.surface
+            )
+        )
+        .clipShape(
+            RoundedRectangle(
+                cornerRadius: 26,
+                style: .continuous
+            )
+        )
+        .overlay {
+            RoundedRectangle(
+                cornerRadius: 26,
+                style: .continuous
+            )
+            .stroke(
+                BeastColors.border.opacity(0.7),
+                lineWidth: 1
+            )
+        }
+        .shadow(
+            color: .black.opacity(0.35),
+            radius: 24,
+            x: 0,
+            y: 14
+        )
+    }
+
+    // MARK: - Close
+
+    private var closeButton: some View {
+        Button {
+            onCancel()
+        } label: {
+            Image(
+                systemName: "xmark"
+            )
+            .font(
+                .system(
+                    size: 12,
+                    weight: .black
+                )
+            )
+            .foregroundStyle(.white)
+            .frame(
+                width: 32,
+                height: 32
+            )
+            .background {
+                Circle()
+                    .fill(
+                        Color.black.opacity(0.72)
+                    )
+            }
+            .overlay {
+                Circle()
+                    .stroke(
+                        Color.white.opacity(0.18),
+                        lineWidth: 1
+                    )
+            }
+        }
+        .buttonStyle(.plain)
+        .contentShape(Circle())
+    }
+
+    // MARK: - Header
+
     private var imageHeader: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             branchImage
 
             LinearGradient(
@@ -91,33 +142,6 @@ struct ConfirmStudioDialog: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-
-            Button {
-                onCancel()
-            } label: {
-                Image(
-                    systemName: "xmark"
-                )
-                .font(
-                    .system(
-                        size: 12,
-                        weight: .black
-                    )
-                )
-                .foregroundStyle(.white)
-                .frame(
-                    width: 28,
-                    height: 28
-                )
-                .background(
-                    Circle()
-                        .fill(
-                            Color.black.opacity(0.65)
-                        )
-                )
-            }
-            .buttonStyle(.plain)
-            .padding(12)
 
             VStack {
                 Spacer()
@@ -133,12 +157,17 @@ struct ConfirmStudioDialog: View {
                 )
                 .italic()
                 .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 50)
                 .padding(.bottom, 16)
             }
             .frame(maxWidth: .infinity)
         }
         .frame(height: 160)
+        .clipped()
     }
+
+    // MARK: - Branch Image
 
     @ViewBuilder
     private var branchImage: some View {
@@ -159,8 +188,11 @@ struct ConfirmStudioDialog: View {
                 case .empty:
                     ZStack {
                         BeastColors.background
+
                         ProgressView()
-                            .tint(BeastColors.primary)
+                            .tint(
+                                BeastColors.primary
+                            )
                     }
 
                 @unknown default:
@@ -190,6 +222,8 @@ struct ConfirmStudioDialog: View {
             )
         }
     }
+
+    // MARK: - Studio Info
 
     private var studioInfoCard: some View {
         HStack(spacing: 12) {
@@ -233,6 +267,7 @@ struct ConfirmStudioDialog: View {
                 .foregroundStyle(
                     BeastColors.textSecondary
                 )
+                .lineLimit(1)
 
                 Text(
                     branch.phone
@@ -246,9 +281,10 @@ struct ConfirmStudioDialog: View {
                 .foregroundStyle(
                     BeastColors.textPrimary
                 )
+                .lineLimit(1)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)
         .frame(height: 64)
@@ -262,6 +298,8 @@ struct ConfirmStudioDialog: View {
             )
         )
     }
+
+    // MARK: - Confirm
 
     private var confirmButton: some View {
         Button {
@@ -284,15 +322,17 @@ struct ConfirmStudioDialog: View {
                 maxWidth: .infinity
             )
             .frame(height: 48)
-            .background(
+            .background {
                 Capsule()
                     .fill(
                         BeastColors.primary
                     )
-            )
+            }
         }
         .buttonStyle(.plain)
     }
+
+    // MARK: - Change
 
     private var changeButton: some View {
         Button {
@@ -315,12 +355,12 @@ struct ConfirmStudioDialog: View {
                 maxWidth: .infinity
             )
             .frame(height: 44)
-            .background(
+            .background {
                 Capsule()
                     .fill(
                         BeastColors.background.opacity(0.8)
                     )
-            )
+            }
         }
         .buttonStyle(.plain)
     }

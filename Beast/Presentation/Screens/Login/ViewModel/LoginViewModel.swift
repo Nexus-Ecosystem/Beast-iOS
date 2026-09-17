@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import FirebaseMessaging
 
 @MainActor
 final class LoginViewModel: ObservableObject {
@@ -23,18 +24,14 @@ final class LoginViewModel: ObservableObject {
 
     var isLoginEnabled: Bool {
         !email
-            .trimmingCharacters(
-                in: .whitespacesAndNewlines
-            )
+            .trimmingCharacters(in: .whitespacesAndNewlines)
             .isEmpty &&
         !password.isEmpty &&
         !isLoading
     }
 
     func login() async {
-        guard isLoginEnabled else {
-            return
-        }
+        guard isLoginEnabled else { return }
 
         isLoading = true
         errorMessage = nil
@@ -46,28 +43,49 @@ final class LoginViewModel: ObservableObject {
 
         do {
             let cleanEmail = email
-                .trimmingCharacters(
-                    in: .whitespacesAndNewlines
-                )
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            let tokenFirebase = await getFirebaseToken()
+
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print("🔥 LOGIN FCM TOKEN")
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            print(tokenFirebase)
+            print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
             let response = try await loginUserUseCase.execute(
                 email: cleanEmail,
                 password: password,
-                tokenFirebase: ""
+                tokenFirebase: tokenFirebase
             )
 
             let profile = response.toDomain()
 
-            storage.saveLoginSession(
-                profile
-            )
+            storage.saveLoginSession(profile)
 
             loginSucceeded = true
+
         } catch let error as AuthError {
             errorMessage = error.localizedDescription
         } catch {
-            errorMessage =
-                "Ocurrió un error al iniciar sesión."
+            print("❌ LOGIN ERROR:", error)
+            errorMessage = "Ocurrió un error al iniciar sesión."
+        }
+    }
+
+    private func getFirebaseToken() async -> String {
+        do {
+            let token = try await Messaging.messaging().token()
+
+            print("🔥 FCM token obtenido para login:")
+            print(token)
+
+            return token
+        } catch {
+            print("❌ No fue posible obtener FCM token:")
+            print(error)
+
+            return ""
         }
     }
 

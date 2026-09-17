@@ -1,18 +1,17 @@
 import SwiftUI
 
 struct VerificationView: View {
-    @StateObject
-    private var viewModel: VerificationViewModel
+    @StateObject private var viewModel: VerificationViewModel
 
-    @State
-    private var showChangePassword = false
+    @State private var showChangePassword = false
+    @State private var showFindBranch = false
 
-    @State
-    private var showFindBranch = false
+    let onPasswordRecoveryCompleted: () -> Void
 
     init(
         user: RegistrationUser,
-        mode: VerificationMode
+        mode: VerificationMode,
+        onPasswordRecoveryCompleted: @escaping () -> Void = {}
     ) {
         _viewModel = StateObject(
             wrappedValue: VerificationViewModel(
@@ -20,6 +19,9 @@ struct VerificationView: View {
                 mode: mode
             )
         )
+
+        self.onPasswordRecoveryCompleted =
+            onPasswordRecoveryCompleted
     }
 
     var body: some View {
@@ -27,168 +29,74 @@ struct VerificationView: View {
             BeastColors.background
                 .ignoresSafeArea()
 
-            ScrollView(
-                showsIndicators: false
-            ) {
-                VStack(
-                    alignment: .leading,
-                    spacing: 0
-                ) {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
                     VerificationShieldView()
-                        .frame(
-                            maxWidth: .infinity
-                        )
-                        .padding(
-                            .top,
-                            18
-                        )
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 18)
 
-                    Text(
-                        "SEGURIDAD ACTIVADA"
-                    )
-                    .font(
-                        .system(
-                            size: 10,
-                            weight: .black
-                        )
-                    )
-                    .tracking(1)
-                    .foregroundStyle(
-                        BeastColors.primary
-                    )
-                    .padding(
-                        .top,
-                        22
-                    )
+                    Text("SEGURIDAD ACTIVADA")
+                        .font(.system(size: 10, weight: .black))
+                        .tracking(1)
+                        .foregroundStyle(BeastColors.primary)
+                        .padding(.top, 22)
 
-                    VStack(
-                        alignment: .leading,
-                        spacing: 0
-                    ) {
-                        Text(
-                            "¿RECIBISTE EL"
-                        )
-                        .foregroundStyle(
-                            BeastColors.textPrimary
-                        )
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("¿RECIBISTE EL")
+                            .foregroundStyle(
+                                BeastColors.textPrimary
+                            )
 
-                        Text(
-                            "CÓDIGO?"
-                        )
-                        .foregroundStyle(
-                            BeastColors.primary
-                        )
+                        Text("CÓDIGO?")
+                            .foregroundStyle(
+                                BeastColors.primary
+                            )
                     }
-                    .font(
-                        .system(
-                            size: 32,
-                            weight: .black
-                        )
-                    )
+                    .font(.system(size: 32, weight: .black))
                     .italic()
-                    .padding(
-                        .top,
-                        6
-                    )
+                    .padding(.top, 6)
 
                     Text(
                         "Ingresa el código de 6 dígitos que enviamos a tu correo electrónico."
                     )
-                    .font(
-                        .system(
-                            size: 13
-                        )
-                    )
-                    .foregroundStyle(
-                        BeastColors.textSecondary
-                    )
-                    .padding(
-                        .top,
-                        12
-                    )
+                    .font(.system(size: 13))
+                    .foregroundStyle(BeastColors.textSecondary)
+                    .padding(.top, 12)
 
                     OTPInputView(
                         otp: $viewModel.otp
                     ) { value in
-                        viewModel.updateOtp(
-                            value
-                        )
+                        viewModel.updateOtp(value)
                     }
-                    .padding(
-                        .top,
-                        30
-                    )
+                    .padding(.top, 30)
 
                     verifyButton
-                        .padding(
-                            .top,
-                            28
-                        )
+                        .padding(.top, 28)
 
                     resendButton
-                        .padding(
-                            .top,
-                            22
-                        )
+                        .padding(.top, 22)
 
                     SecurityNoteCard()
-                        .padding(
-                            .top,
-                            38
-                        )
+                        .padding(.top, 38)
 
                     Spacer()
-                        .frame(
-                            height: 30
-                        )
+                        .frame(height: 30)
                 }
-                .padding(
-                    .horizontal,
-                    24
-                )
+                .padding(.horizontal, 24)
             }
 
-            if viewModel.isLoading {
-                BeastLoadingOverlay()
-                    .zIndex(20)
-            }
-
-            if viewModel.showError {
-                BeastAlertDialog(
-                    style: .error,
-                    title: "¡Aviso!",
-                    message: viewModel.errorMessage,
-                    buttonTitle: "Entendido"
-                ) {
-                    viewModel.closeError()
-                }
-                .zIndex(30)
-            }
-
-            if viewModel.showSuccess {
-                BeastAlertDialog(
-                    style: .success,
-                    title: "¡Felicidades!",
-                    message: "Se ha creado tu cuenta exitosamente, ahora debes escoger tu STUDIO.",
-                    buttonTitle: "Entendido"
-                ) {
-                    viewModel.showSuccess = false
-                    showFindBranch = true
-                }
-                .zIndex(40)
-            }
+            overlays
         }
-        .navigationTitle(
-            "Verificación"
-        )
-        .navigationBarTitleDisplayMode(
-            .inline
-        )
+        .navigationTitle("Verificación")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .navigationDestination(
             isPresented: $showChangePassword
         ) {
             ChangePasswordView(
-                email: viewModel.user.email
+                email: viewModel.user.email,
+                onCompleted:
+                    onPasswordRecoveryCompleted
             )
         }
         .navigationDestination(
@@ -206,17 +114,13 @@ struct VerificationView: View {
         .onChange(
             of: viewModel.passwordOtpVerified
         ) { _, verified in
-            guard verified else {
-                return
-            }
+            guard verified else { return }
 
             showChangePassword = true
         }
-        .toolbar(
-            .hidden,
-            for: .tabBar
-        )
     }
+
+    // MARK: - Verify Button
 
     private var verifyButton: some View {
         Button {
@@ -224,33 +128,16 @@ struct VerificationView: View {
                 await viewModel.verify()
             }
         } label: {
-            HStack(
-                spacing: 8
-            ) {
-                Text(
-                    "VERIFICAR"
-                )
-                .font(
-                    .system(
-                        size: 13,
-                        weight: .black
-                    )
-                )
-                .italic()
+            HStack(spacing: 8) {
+                Text("VERIFICAR")
+                    .font(.system(size: 13, weight: .black))
+                    .italic()
 
-                Image(
-                    systemName: "bolt.fill"
-                )
+                Image(systemName: "bolt.fill")
             }
-            .foregroundStyle(
-                BeastColors.buttonText
-            )
-            .frame(
-                maxWidth: .infinity
-            )
-            .frame(
-                height: 56
-            )
+            .foregroundStyle(BeastColors.buttonText)
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
             .background(
                 Capsule()
                     .fill(
@@ -264,46 +151,70 @@ struct VerificationView: View {
         }
         .buttonStyle(.plain)
         .disabled(
-            !viewModel.isOtpComplete
+            !viewModel.isOtpComplete ||
+            viewModel.isLoading
         )
     }
 
+    // MARK: - Resend Button
+
     private var resendButton: some View {
-        HStack(
-            spacing: 4
-        ) {
-            Text(
-                "¿NO RECIBISTE EL CÓDIGO?"
-            )
-            .foregroundStyle(
-                BeastColors.textSecondary
-            )
+        HStack(spacing: 4) {
+            Text("¿NO RECIBISTE EL CÓDIGO?")
+                .foregroundStyle(
+                    BeastColors.textSecondary
+                )
 
             Button {
                 Task {
                     await viewModel.resendOtp()
                 }
             } label: {
-                Text(
-                    "Reenviar ahora"
-                )
-                .foregroundStyle(
-                    BeastColors.primary
-                )
-                .fontWeight(
-                    .bold
-                )
+                Text("Reenviar ahora")
+                    .foregroundStyle(
+                        BeastColors.primary
+                    )
+                    .fontWeight(.bold)
             }
             .buttonStyle(.plain)
+            .disabled(viewModel.isLoading)
         }
-        .font(
-            .system(
-                size: 10,
-                weight: .bold
-            )
-        )
-        .frame(
-            maxWidth: .infinity
-        )
+        .font(.system(size: 10, weight: .bold))
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Overlays
+
+    @ViewBuilder
+    private var overlays: some View {
+        if viewModel.isLoading {
+            BeastLoadingOverlay()
+                .zIndex(20)
+        }
+
+        if viewModel.showError {
+            BeastAlertDialog(
+                style: .error,
+                title: "¡Aviso!",
+                message: viewModel.errorMessage,
+                buttonTitle: "Entendido"
+            ) {
+                viewModel.closeError()
+            }
+            .zIndex(30)
+        }
+
+        if viewModel.showSuccess {
+            BeastAlertDialog(
+                style: .success,
+                title: "¡Felicidades!",
+                message: "Se ha creado tu cuenta exitosamente, ahora debes escoger tu STUDIO.",
+                buttonTitle: "Entendido"
+            ) {
+                viewModel.showSuccess = false
+                showFindBranch = true
+            }
+            .zIndex(40)
+        }
     }
 }

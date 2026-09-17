@@ -35,140 +35,28 @@ struct ScheduleBookingConfirmationDialog: View {
                 iconView
 
                 Text(title)
-                    .font(
-                        .system(
-                            size: 19,
-                            weight: .black
-                        )
-                    )
+                    .font(.system(size: 19, weight: .black))
                     .italic()
                     .foregroundStyle(.primary)
-                    .multilineTextAlignment(
-                        .center
-                    )
-                    .padding(
-                        .top,
-                        18
-                    )
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 18)
 
                 Text(message)
-                    .font(
-                        .system(
-                            size: 10
-                        )
-                    )
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(
-                        .center
-                    )
+                    .multilineTextAlignment(.center)
                     .lineSpacing(3)
-                    .padding(
-                        .horizontal,
-                        22
-                    )
-                    .padding(
-                        .top,
-                        8
-                    )
+                    .padding(.horizontal, 22)
+                    .padding(.top, 8)
 
                 reservationInfo
-                    .padding(
-                        .top,
-                        20
-                    )
+                    .padding(.top, 20)
 
-                Button {
-                    onConfirm()
-                } label: {
-                    Text(confirmTitle)
-                        .font(
-                            .system(
-                                size: 11,
-                                weight: .bold
-                            )
-                        )
-                        .foregroundStyle(
-                            .white
-                        )
-                        .frame(
-                            maxWidth:
-                                .infinity
-                        )
-                        .frame(
-                            height: 42
-                        )
-                        .background(
-                            destructive
-                            ? Color.red
-                            : purple
-                        )
-                        .clipShape(
-                            Capsule()
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding(
-                    .horizontal,
-                    18
-                )
-                .padding(
-                    .top,
-                    20
-                )
-
-                Button {
-                    onClose()
-                } label: {
-                    Text("CERRAR")
-                        .font(
-                            .system(
-                                size: 11,
-                                weight: .bold
-                            )
-                        )
-                        .foregroundStyle(
-                            .white
-                        )
-                        .frame(
-                            maxWidth:
-                                .infinity
-                        )
-                        .frame(
-                            height: 42
-                        )
-                        .background(
-                            Color(
-                                red: 0.15,
-                                green: 0.17,
-                                blue: 0.20
-                            )
-                        )
-                        .clipShape(
-                            Capsule()
-                        )
-                }
-                .buttonStyle(.plain)
-                .padding(
-                    .horizontal,
-                    18
-                )
-                .padding(
-                    .top,
-                    10
-                )
-                .padding(
-                    .bottom,
-                    18
-                )
+                confirmButton
+                closeButton
             }
-            .frame(
-                maxWidth: 276
-            )
-            .background(
-                Color(
-                    .systemBackground
-                )
-            )
+            .frame(maxWidth: 276)
+            .background(Color(.systemBackground))
             .clipShape(
                 RoundedRectangle(
                     cornerRadius: 26,
@@ -176,15 +64,15 @@ struct ScheduleBookingConfirmationDialog: View {
                 )
             )
             .shadow(
-                color:
-                    .black
-                    .opacity(0.35),
+                color: .black.opacity(0.35),
                 radius: 20,
                 x: 0,
                 y: 12
             )
         }
     }
+
+    // MARK: - Icon
 
     private var iconView: some View {
         ZStack {
@@ -198,44 +86,33 @@ struct ScheduleBookingConfirmationDialog: View {
                         blue: 0.0
                     )
                 )
-                .frame(
-                    width: 48,
-                    height: 48
-                )
+                .frame(width: 48, height: 48)
 
             Image(
-                systemName:
-                    destructive
-                    ? "xmark"
-                    : "calendar.badge.checkmark"
+                systemName: destructive
+                ? "xmark"
+                : "calendar.badge.checkmark"
             )
-            .font(
-                .system(
-                    size: 21,
-                    weight: .bold
-                )
-            )
+            .font(.system(size: 21, weight: .bold))
             .foregroundStyle(
                 destructive
                 ? Color.white
                 : neon
             )
         }
-        .padding(
-            .top,
-            18
-        )
+        .padding(.top, 18)
     }
+
+    // MARK: - Reservation Info
 
     private var reservationInfo: some View {
         VStack(spacing: 0) {
-            HStack(
-                spacing: 16
-            ) {
+            HStack(alignment: .top, spacing: 16) {
                 infoItem(
                     title: "Tipo Clase",
                     value: item.name,
-                    highlightTitle: true
+                    highlightTitle: true,
+                    allowsMultipleLines: true
                 )
 
                 infoItem(
@@ -246,19 +123,12 @@ struct ScheduleBookingConfirmationDialog: View {
             }
 
             Divider()
-                .padding(
-                    .vertical,
-                    12
-                )
+                .padding(.vertical, 12)
 
-            HStack(
-                spacing: 16
-            ) {
+            HStack(alignment: .top, spacing: 16) {
                 infoItem(
                     title: "Fecha",
-                    value:
-                        date
-                        .scheduleDay,
+                    value: date.scheduleDay,
                     highlightTitle: false
                 )
 
@@ -270,39 +140,27 @@ struct ScheduleBookingConfirmationDialog: View {
             }
         }
         .padding(16)
-        .background(
-            Color(
-                .secondarySystemBackground
-            )
-        )
+        .background(Color(.secondarySystemBackground))
         .clipShape(
             RoundedRectangle(
                 cornerRadius: 16,
                 style: .continuous
             )
         )
-        .padding(
-            .horizontal,
-            18
-        )
+        .padding(.horizontal, 18)
     }
+
+    // MARK: - Info Item
 
     private func infoItem(
         title: String,
         value: String,
-        highlightTitle: Bool
+        highlightTitle: Bool,
+        allowsMultipleLines: Bool = false
     ) -> some View {
-        VStack(
-            alignment: .leading,
-            spacing: 8
-        ) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(
-                    .system(
-                        size: 8,
-                        weight: .medium
-                    )
-                )
+                .font(.system(size: 8, weight: .medium))
                 .foregroundStyle(
                     highlightTitle
                     ? purple
@@ -310,20 +168,67 @@ struct ScheduleBookingConfirmationDialog: View {
                 )
 
             Text(value)
-                .font(
-                    .system(
-                        size: 11,
-                        weight: .medium
-                    )
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.primary)
+                .lineLimit(allowsMultipleLines ? nil : 1)
+                .fixedSize(
+                    horizontal: false,
+                    vertical: allowsMultipleLines
                 )
-                .foregroundStyle(
-                    .primary
-                )
-                .lineLimit(1)
+                .multilineTextAlignment(.leading)
         }
         .frame(
             maxWidth: .infinity,
-            alignment: .leading
+            alignment: .topLeading
         )
+    }
+
+    // MARK: - Confirm Button
+
+    private var confirmButton: some View {
+        Button {
+            onConfirm()
+        } label: {
+            Text(confirmTitle)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 42)
+                .background(
+                    destructive
+                    ? Color.red
+                    : purple
+                )
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 18)
+        .padding(.top, 20)
+    }
+
+    // MARK: - Close Button
+
+    private var closeButton: some View {
+        Button {
+            onClose()
+        } label: {
+            Text("CERRAR")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 42)
+                .background(
+                    Color(
+                        red: 0.15,
+                        green: 0.17,
+                        blue: 0.20
+                    )
+                )
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 18)
+        .padding(.top, 10)
+        .padding(.bottom, 18)
     }
 }

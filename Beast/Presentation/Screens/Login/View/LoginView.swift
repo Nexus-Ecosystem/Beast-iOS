@@ -5,6 +5,7 @@ struct LoginView: View {
     @FocusState private var focusedField: Field?
 
     @State private var showSignUp = false
+    @State private var showRecoverPassword = false
 
     enum Field {
         case email
@@ -49,6 +50,11 @@ struct LoginView: View {
             }
             .navigationDestination(isPresented: $showSignUp) {
                 SignUpView()
+            }
+            .navigationDestination(isPresented: $showRecoverPassword) {
+                RecoverPasswordView {
+                    showRecoverPassword = false
+                }
             }
             .onChange(of: viewModel.loginSucceeded) { _, succeeded in
                 guard succeeded else { return }
@@ -122,6 +128,7 @@ struct LoginView: View {
     private var forgotPasswordButton: some View {
         Button {
             dismissKeyboard()
+            showRecoverPassword = true
         } label: {
             Text("¿Olvidaste tu contraseña?")
                 .font(.system(size: 10, weight: .bold))

@@ -8,32 +8,55 @@ struct RootView: View {
     @AppStorage("dark_mode")
     private var darkMode = false
 
-    private let onboardingPreferences: OnboardingPreferencesProtocol
-    private let storage: AppStorageManager
+    private let onboardingPreferences:
+        OnboardingPreferencesProtocol
+
+    private let storage:
+        AppStorageManager
 
     init(
-        onboardingPreferences: OnboardingPreferencesProtocol = OnboardingPreferences.shared,
-        storage: AppStorageManager = .shared
+        onboardingPreferences:
+            OnboardingPreferencesProtocol =
+                OnboardingPreferences.shared,
+        storage:
+            AppStorageManager = .shared
     ) {
-        self.onboardingPreferences = onboardingPreferences
-        self.storage = storage
+        self.onboardingPreferences =
+            onboardingPreferences
 
-        let loggedIn = storage.isLoggedIn
-        let profile = storage.getProfile()
+        self.storage =
+            storage
 
-        _hasCompletedOnboarding = State(
-            initialValue: onboardingPreferences.hasCompletedOnboarding
-        )
+        let loggedIn =
+            storage.isLoggedIn
 
-        _isLoggedIn = State(
-            initialValue: loggedIn
-        )
+        let profile =
+            storage.getProfile()
 
-        _needsBranch = State(
-            initialValue:
-                loggedIn &&
-                (profile?.branches.isEmpty ?? true)
-        )
+        _hasCompletedOnboarding =
+            State(
+                initialValue:
+                    onboardingPreferences
+                        .hasCompletedOnboarding
+            )
+
+        _isLoggedIn =
+            State(
+                initialValue:
+                    loggedIn
+            )
+
+        _needsBranch =
+            State(
+                initialValue:
+                    loggedIn &&
+                    (
+                        profile?
+                            .branches
+                            .isEmpty
+                        ?? true
+                    )
+            )
     }
 
     var body: some View {
@@ -42,11 +65,15 @@ struct RootView: View {
                 OnboardingView {
                     completeOnboarding()
                 }
-                .transition(.opacity)
+                .transition(
+                    .opacity
+                )
 
             } else if !isLoggedIn {
                 LoginView()
-                    .transition(.opacity)
+                    .transition(
+                        .opacity
+                    )
 
             } else if needsBranch {
                 NavigationStack {
@@ -54,11 +81,15 @@ struct RootView: View {
                         branchSelectionCompleted()
                     }
                 }
-                .transition(.opacity)
+                .transition(
+                    .opacity
+                )
 
             } else {
                 MainTabView()
-                    .transition(.opacity)
+                    .transition(
+                        .opacity
+                    )
             }
         }
         .preferredColorScheme(
@@ -67,53 +98,74 @@ struct RootView: View {
                 : .light
         )
         .animation(
-            .easeInOut(duration: 0.3),
-            value: hasCompletedOnboarding
+            .easeInOut(
+                duration: 0.3
+            ),
+            value:
+                hasCompletedOnboarding
         )
         .animation(
-            .easeInOut(duration: 0.3),
-            value: isLoggedIn
+            .easeInOut(
+                duration: 0.3
+            ),
+            value:
+                isLoggedIn
         )
         .animation(
-            .easeInOut(duration: 0.3),
-            value: needsBranch
+            .easeInOut(
+                duration: 0.3
+            ),
+            value:
+                needsBranch
         )
         .onAppear {
             refreshSessionState()
         }
         .onReceive(
-            NotificationCenter.default.publisher(
-                for: .sessionDidChange
-            )
+            NotificationCenter
+                .default
+                .publisher(
+                    for:
+                        .sessionDidChange
+                )
         ) { _ in
             refreshSessionState()
         }
     }
 
     private func completeOnboarding() {
-        onboardingPreferences.completeOnboarding()
+        onboardingPreferences
+            .completeOnboarding()
 
         withAnimation {
-            hasCompletedOnboarding = true
+            hasCompletedOnboarding =
+                true
         }
     }
 
     private func refreshSessionState() {
-        let loggedIn = storage.isLoggedIn
+        let loggedIn =
+            storage.isLoggedIn
 
-        isLoggedIn = loggedIn
+        isLoggedIn =
+            loggedIn
 
         guard loggedIn else {
-            needsBranch = false
+            needsBranch =
+                false
             return
         }
 
-        guard let profile = storage.getProfile() else {
-            needsBranch = true
+        guard let profile =
+            storage.getProfile()
+        else {
+            needsBranch =
+                true
             return
         }
 
-        needsBranch = profile.branches.isEmpty
+        needsBranch =
+            profile.branches.isEmpty
     }
 
     private func branchSelectionCompleted() {

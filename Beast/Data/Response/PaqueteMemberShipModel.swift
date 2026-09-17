@@ -1,6 +1,7 @@
 import Foundation
 
 struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
+
     let idPaquete: String
     let name: String
     let descripcion: String
@@ -9,6 +10,7 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
     let beneficios: [String]
     let tipoPaquete: Int
     let imagePlan: String
+    let diasVigencia: Int
 
     var id: String {
         idPaquete
@@ -22,7 +24,8 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
         precioDescuento: Double = 0,
         beneficios: [String] = [],
         tipoPaquete: Int = 0,
-        imagePlan: String = ""
+        imagePlan: String = "",
+        diasVigencia: Int = 0
     ) {
         self.idPaquete = idPaquete
         self.name = name
@@ -32,6 +35,7 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
         self.beneficios = beneficios
         self.tipoPaquete = tipoPaquete
         self.imagePlan = imagePlan
+        self.diasVigencia = diasVigencia
     }
 
     enum CodingKeys: String, CodingKey {
@@ -43,5 +47,6 @@ struct PaqueteMemberShipModel: Codable, Identifiable, Equatable {
         case beneficios
         case tipoPaquete
         case imagePlan
+        case diasVigencia
     }
 }

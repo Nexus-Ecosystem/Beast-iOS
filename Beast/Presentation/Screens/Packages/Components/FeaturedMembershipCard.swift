@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct FeaturedMembershipCard: View {
+
     let package: PaqueteMemberShipModel
     let isActive: Bool
     let buttonTitle: String
@@ -21,8 +22,8 @@ struct FeaturedMembershipCard: View {
 
     private var badgeTitle: String {
         isActive
-        ? "PAQUETE ACTIVO"
-        : "MÁS POPULAR"
+            ? "PAQUETE ACTIVO"
+            : "MÁS POPULAR"
     }
 
     var body: some View {
@@ -34,52 +35,40 @@ struct FeaturedMembershipCard: View {
                 badge
 
                 Spacer()
-                    .frame(
-                        minHeight: 125
-                    )
+                    .frame(minHeight: 125)
 
-                Text(
-                    package.name.uppercased()
-                )
-                .font(
-                    .system(
-                        size: 30,
-                        weight: .black
-                    )
-                )
-                .italic()
-                .foregroundStyle(.white)
-                .lineLimit(2)
-                .minimumScaleFactor(0.8)
-
-                if !package.descripcion.isEmpty {
-                    Text(
-                        package.descripcion
-                            .uppercased()
-                    )
+                Text(package.name.uppercased())
                     .font(
                         .system(
-                            size: 15,
-                            weight: .medium
-                        )
-                    )
-                    .foregroundStyle(
-                        .white.opacity(0.8)
-                    )
-                    .fixedSize(
-                        horizontal: false,
-                        vertical: true
-                    )
-                }
-
-                Text(priceText)
-                    .font(
-                        .system(
-                            size: 31,
+                            size: 30,
                             weight: .black
                         )
                     )
+                    .italic()
                     .foregroundStyle(.white)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+
+                if !package.descripcion.isEmpty {
+                    Text(package.descripcion.uppercased())
+                        .font(
+                            .system(
+                                size: 15,
+                                weight: .medium
+                            )
+                        )
+                        .foregroundStyle(
+                            .white.opacity(0.8)
+                        )
+                        .fixedSize(
+                            horizontal: false,
+                            vertical: true
+                        )
+                }
+
+                validityRow
+
+                priceRow
 
                 if !package.beneficios.isEmpty {
                     VStack(
@@ -94,17 +83,13 @@ struct FeaturedMembershipCard: View {
                             ),
                             id: \.offset
                         ) { _, benefit in
-                            benefitRow(
-                                benefit
-                            )
+                            benefitRow(benefit)
                         }
                     }
                     .padding(.top, 2)
                 }
 
-                Button(
-                    action: onAction
-                ) {
+                Button(action: onAction) {
                     Text(buttonTitle)
                         .font(
                             .system(
@@ -113,25 +98,15 @@ struct FeaturedMembershipCard: View {
                             )
                         )
                         .foregroundStyle(.white)
-                        .frame(
-                            maxWidth: .infinity
-                        )
+                        .frame(maxWidth: .infinity)
                         .frame(height: 52)
                         .background(
-                            Color(
-                                "BeastTabSelected"
-                            )
+                            Color("BeastTabSelected")
                         )
-                        .clipShape(
-                            Capsule()
-                        )
+                        .clipShape(Capsule())
                 }
                 .disabled(!canBuy)
-                .opacity(
-                    canBuy
-                    ? 1
-                    : 0.65
-                )
+                .opacity(canBuy ? 1 : 0.65)
                 .padding(.top, 8)
             }
             .padding(20)
@@ -165,18 +140,66 @@ struct FeaturedMembershipCard: View {
         )
     }
 
+    private var validityRow: some View {
+        HStack(spacing: 7) {
+            Image(systemName: "calendar")
+                .font(
+                    .system(
+                        size: 14,
+                        weight: .semibold
+                    )
+                )
+
+            Text("Vigencia: \(package.diasVigencia) días")
+                .font(
+                    .system(
+                        size: 14,
+                        weight: .semibold
+                    )
+                )
+        }
+        .foregroundStyle(
+            .white.opacity(0.88)
+        )
+    }
+
+    private var priceRow: some View {
+        HStack(
+            alignment: .firstTextBaseline,
+            spacing: 5
+        ) {
+            Text(priceText)
+                .font(
+                    .system(
+                        size: 31,
+                        weight: .black
+                    )
+                )
+                .foregroundStyle(.white)
+
+            Text("/ mes")
+                .font(
+                    .system(
+                        size: 14,
+                        weight: .semibold
+                    )
+                )
+                .foregroundStyle(
+                    .white.opacity(0.7)
+                )
+        }
+    }
+
     private var badge: some View {
         HStack(spacing: 6) {
             if isActive {
-                Image(
-                    systemName: "star.fill"
-                )
-                .font(
-                    .system(
-                        size: 10,
-                        weight: .bold
+                Image(systemName: "star.fill")
+                    .font(
+                        .system(
+                            size: 10,
+                            weight: .bold
+                        )
                     )
-                )
             }
 
             Text(badgeTitle)
@@ -188,28 +211,18 @@ struct FeaturedMembershipCard: View {
                 )
         }
         .foregroundStyle(.white)
-        .padding(
-            .horizontal,
-            14
-        )
-        .padding(
-            .vertical,
-            7
-        )
+        .padding(.horizontal, 14)
+        .padding(.vertical, 7)
         .background(
             Color("BeastTabSelected")
         )
-        .clipShape(
-            Capsule()
-        )
+        .clipShape(Capsule())
     }
 
     @ViewBuilder
     private var remoteImage: some View {
         if let imageURL {
-            AsyncImage(
-                url: imageURL
-            ) { phase in
+            AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .empty:
                     fallbackImage
@@ -245,8 +258,7 @@ struct FeaturedMembershipCard: View {
             spacing: 9
         ) {
             Image(
-                systemName:
-                    "checkmark.circle.fill"
+                systemName: "checkmark.circle.fill"
             )
             .font(
                 .system(
@@ -254,9 +266,7 @@ struct FeaturedMembershipCard: View {
                     weight: .bold
                 )
             )
-            .foregroundStyle(
-                Color.green
-            )
+            .foregroundStyle(.green)
 
             Text(text)
                 .font(

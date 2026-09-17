@@ -1,8 +1,6 @@
 import SwiftUI
 import NexusDesignSystem
 import FirebaseCore
-import FirebaseMessaging
-import UserNotifications
 
 @main
 struct BeastApp: App {
@@ -46,5 +44,11 @@ struct BeastApp: App {
         }
 
         FirebaseApp.configure(options: options)
+
+        print("🔥 FIREBASE CONFIGURADO")
+        print("🔥 Config:", configName)
+        print("🔥 Project ID:", options.projectID ?? "NIL")
+        print("🔥 Google App ID:", options.googleAppID)
+        print("🔥 Bundle ID:", Bundle.main.bundleIdentifier ?? "NIL")
     }
 }

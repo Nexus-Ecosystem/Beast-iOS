@@ -13,20 +13,57 @@
 		0B63865630548F75005BD099 /* GoogleService-Info-Prod.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0B63857C305467F2005BD099 /* GoogleService-Info-Prod.plist */; };
 		0B6AEBAC305A613000FA5525 /* NexusDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 0B6AEBAB305A613000FA5525 /* NexusDesignSystem */; };
 		0B6AEBB0305B2BE600FA5525 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 0B6AEBAF305B2BE600FA5525 /* FirebaseMessaging */; };
+		0B6D0A6D305B42D700C74BA6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B6D0A6C305B42D700C74BA6 /* WidgetKit.framework */; };
+		0B6D0A6F305B42D700C74BA6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B6D0A6E305B42D700C74BA6 /* SwiftUI.framework */; };
+		0B6D0A7A305B42D800C74BA6 /* BeastWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0B6D0A6A305B42D700C74BA6 /* BeastWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0B9108D42F29461F00B9196A /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 0B9108D32F29461F00B9196A /* Lottie */; };
 		0BB1684A304F32AB0076D367 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB16849304F32AB0076D367 /* FirebaseAuth */; };
 		0BB1684C304F32AB0076D367 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0BB1684B304F32AB0076D367 /* FirebaseStorage */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0B6D0A78305B42D800C74BA6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0B9107CC2F27EA4900B9196A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B6D0A69305B42D700C74BA6;
+			remoteInfo = BeastWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0B6D0A7B305B42D800C74BA6 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0B6D0A7A305B42D800C74BA6 /* BeastWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0B63857C305467F2005BD099 /* GoogleService-Info-Prod.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Prod.plist"; sourceTree = "<group>"; };
 		0B63864430547A75005BD099 /* Dev.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Dev.xcconfig; sourceTree = "<group>"; };
 		0B63864530547A91005BD099 /* Prod.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Prod.xcconfig; sourceTree = "<group>"; };
 		0B63865230548CCC005BD099 /* GoogleService-Info-Dev.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Dev.plist"; sourceTree = "<group>"; };
+		0B6D0A6A305B42D700C74BA6 /* BeastWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BeastWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0B6D0A6C305B42D700C74BA6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		0B6D0A6E305B42D700C74BA6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		0B9107D42F27EA4900B9196A /* Beast.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Beast.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0B6D0A7F305B42D800C74BA6 /* Exceptions for "BeastWidget" folder in "BeastWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 0B6D0A69305B42D700C74BA6 /* BeastWidgetExtension */;
+		};
 		0BB1690C304F4A470076D367 /* Exceptions for "Beast" folder in "Beast" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -37,6 +74,14 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		0B6D0A70305B42D700C74BA6 /* BeastWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0B6D0A7F305B42D800C74BA6 /* Exceptions for "BeastWidget" folder in "BeastWidgetExtension" target */,
+			);
+			path = BeastWidget;
+			sourceTree = "<group>";
+		};
 		0B9107D62F27EA4900B9196A /* Beast */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -48,6 +93,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0B6D0A67305B42D700C74BA6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B6D0A6F305B42D700C74BA6 /* SwiftUI.framework in Frameworks */,
+				0B6D0A6D305B42D700C74BA6 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0B9107D12F27EA4900B9196A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -76,11 +130,22 @@
 			path = Configurations;
 			sourceTree = "<group>";
 		};
+		0B6D0A6B305B42D700C74BA6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				0B6D0A6C305B42D700C74BA6 /* WidgetKit.framework */,
+				0B6D0A6E305B42D700C74BA6 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		0B9107CB2F27EA4900B9196A = {
 			isa = PBXGroup;
 			children = (
 				0B63864330547A66005BD099 /* Configurations */,
 				0B9107D62F27EA4900B9196A /* Beast */,
+				0B6D0A70305B42D700C74BA6 /* BeastWidget */,
+				0B6D0A6B305B42D700C74BA6 /* Frameworks */,
 				0B9107D52F27EA4900B9196A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -89,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				0B9107D42F27EA4900B9196A /* Beast.app */,
+				0B6D0A6A305B42D700C74BA6 /* BeastWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -96,6 +162,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0B6D0A69305B42D700C74BA6 /* BeastWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B6D0A7E305B42D800C74BA6 /* Build configuration list for PBXNativeTarget "BeastWidgetExtension" */;
+			buildPhases = (
+				0B6D0A66305B42D700C74BA6 /* Sources */,
+				0B6D0A67305B42D700C74BA6 /* Frameworks */,
+				0B6D0A68305B42D700C74BA6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0B6D0A70305B42D700C74BA6 /* BeastWidget */,
+			);
+			name = BeastWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = BeastWidgetExtension;
+			productReference = 0B6D0A6A305B42D700C74BA6 /* BeastWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		0B9107D32F27EA4900B9196A /* Beast */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B9107DF2F27EA4B00B9196A /* Build configuration list for PBXNativeTarget "Beast" */;
@@ -104,10 +192,12 @@
 				0B9107D12F27EA4900B9196A /* Frameworks */,
 				0B9107D22F27EA4900B9196A /* Resources */,
 				0B63865430548CFB005BD099 /* ShellScript */,
+				0B6D0A7B305B42D800C74BA6 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0B6D0A79305B42D800C74BA6 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				0B9107D62F27EA4900B9196A /* Beast */,
@@ -136,6 +226,9 @@
 				LastSwiftUpdateCheck = 2610;
 				LastUpgradeCheck = 2610;
 				TargetAttributes = {
+					0B6D0A69305B42D700C74BA6 = {
+						CreatedOnToolsVersion = 26.1.1;
+					};
 					0B9107D32F27EA4900B9196A = {
 						CreatedOnToolsVersion = 26.1.1;
 					};
@@ -161,11 +254,19 @@
 			projectRoot = "";
 			targets = (
 				0B9107D32F27EA4900B9196A /* Beast */,
+				0B6D0A69305B42D700C74BA6 /* BeastWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0B6D0A68305B42D700C74BA6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0B9107D22F27EA4900B9196A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -199,6 +300,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0B6D0A66305B42D700C74BA6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0B9107D02F27EA4900B9196A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -208,7 +316,80 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		0B6D0A79305B42D800C74BA6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0B6D0A69305B42D700C74BA6 /* BeastWidgetExtension */;
+			targetProxy = 0B6D0A78305B42D800C74BA6 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		0B6D0A7C305B42D800C74BA6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8WUGQ4NY6Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BeastWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BeastWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nexus.beast.Beast.BeastWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0B6D0A7D305B42D800C74BA6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8WUGQ4NY6Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BeastWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BeastWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nexus.beast.Beast.BeastWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		0B9107DD2F27EA4B00B9196A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -331,6 +512,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Beast/Beast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 8WUGQ4NY6Y;
@@ -378,6 +560,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Beast/Beast.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 8WUGQ4NY6Y;
@@ -422,6 +605,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0B6D0A7E305B42D800C74BA6 /* Build configuration list for PBXNativeTarget "BeastWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B6D0A7C305B42D800C74BA6 /* Debug */,
+				0B6D0A7D305B42D800C74BA6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		0B9107CF2F27EA4900B9196A /* Build configuration list for PBXProject "Beast" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -6,10 +6,19 @@ struct ChangePasswordView: View {
     @State private var passwordVisible = false
     @State private var confirmPasswordVisible = false
 
-    init(email: String) {
+    let onCompleted: () -> Void
+
+    init(
+        email: String,
+        onCompleted: @escaping () -> Void = {}
+    ) {
         _viewModel = StateObject(
-            wrappedValue: ChangePasswordViewModel(email: email)
+            wrappedValue: ChangePasswordViewModel(
+                email: email
+            )
         )
+
+        self.onCompleted = onCompleted
     }
 
     var body: some View {
@@ -37,7 +46,8 @@ struct ChangePasswordView: View {
                         percentage: viewModel.strengthPercentage,
                         hasUppercase: viewModel.hasUppercase,
                         hasNumber: viewModel.hasNumber,
-                        hasSpecialCharacter: viewModel.hasSpecialCharacter,
+                        hasSpecialCharacter:
+                            viewModel.hasSpecialCharacter,
                         hasMinLength: viewModel.hasMinLength
                     )
                     .padding(.top, 24)
@@ -49,6 +59,8 @@ struct ChangePasswordView: View {
                     )
                     .padding(.top, 30)
 
+                    passwordMismatchMessage
+
                     Spacer()
                         .frame(minHeight: 80)
 
@@ -57,41 +69,43 @@ struct ChangePasswordView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
+            .scrollDismissesKeyboard(.interactively)
 
-            if viewModel.isLoading {
-                BeastLoadingOverlay()
-                    .zIndex(1000)
-            }
+            overlays
         }
         .navigationTitle("Cambia tu contraseña")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
-        .alert(
-            "¡Felicidades!",
-            isPresented: $viewModel.showSuccess
-        ) {
-            Button("Entendido") {
-                viewModel.confirmSuccess()
+    }
+
+    // MARK: - Validation
+
+    @ViewBuilder
+    private var passwordMismatchMessage: some View {
+        if !viewModel.confirmPassword.isEmpty &&
+            viewModel.password != viewModel.confirmPassword {
+            HStack(spacing: 6) {
+                Image(
+                    systemName:
+                        "exclamationmark.circle.fill"
+                )
+
+                Text(
+                    "Las contraseñas no coinciden."
+                )
             }
-        } message: {
-            Text(
-                "Cambiaste tu contraseña correctamente. Ahora puedes ingresar con tu nueva contraseña."
-            )
-        }
-        .alert(
-            "No fue posible continuar",
-            isPresented: $viewModel.showError
-        ) {
-            Button("Entendido") {
-                viewModel.closeError()
-            }
-        } message: {
-            Text(viewModel.errorMessage)
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(.red)
+            .padding(.top, 10)
         }
     }
 
+    // MARK: - Button
+
     private var changePasswordButton: some View {
         Button {
+            hideKeyboard()
+
             Task {
                 await viewModel.changePassword()
             }
@@ -110,12 +124,52 @@ struct ChangePasswordView: View {
                 Capsule()
                     .fill(
                         BeastColors.primary.opacity(
-                            viewModel.canSubmit ? 1 : 0.45
+                            viewModel.canSubmit
+                                ? 1
+                                : 0.45
                         )
                     )
             )
         }
         .buttonStyle(.plain)
-        .disabled(!viewModel.canSubmit)
+        .disabled(
+            !viewModel.canSubmit ||
+            viewModel.isLoading
+        )
+    }
+
+    // MARK: - Overlays
+
+    @ViewBuilder
+    private var overlays: some View {
+        if viewModel.isLoading {
+            BeastLoadingOverlay()
+                .zIndex(100)
+        }
+
+        if viewModel.showError {
+            BeastAlertDialog(
+                style: .error,
+                title: "¡Aviso!",
+                message: viewModel.errorMessage,
+                buttonTitle: "Entendido"
+            ) {
+                viewModel.closeError()
+            }
+            .zIndex(200)
+        }
+
+        if viewModel.showSuccess {
+            BeastAlertDialog(
+                style: .success,
+                title: "¡Felicidades!",
+                message: "Cambiaste tu contraseña correctamente. Ahora puedes ingresar con tu nueva contraseña.",
+                buttonTitle: "Entendido"
+            ) {
+                viewModel.confirmSuccess()
+                onCompleted()
+            }
+            .zIndex(300)
+        }
     }
 }
