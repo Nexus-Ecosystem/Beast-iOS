@@ -24,9 +24,7 @@ protocol ScheduleFirebaseDataSourceProtocol {
     ) async -> [PaqueteMemberShipModel]
 }
 
-final class ScheduleFirebaseDataSource:
-    ScheduleFirebaseDataSourceProtocol
-{
+final class ScheduleFirebaseDataSource: ScheduleFirebaseDataSourceProtocol {
 
     private let firestore: Firestore
 
@@ -35,6 +33,8 @@ final class ScheduleFirebaseDataSource:
     ) {
         self.firestore = firestore
     }
+
+    // MARK: - Schedules
 
     func observeSchedules(
         branch: String,
@@ -67,13 +67,11 @@ final class ScheduleFirebaseDataSource:
                         path: path,
                         error: error
                     )
-
                     onError(error)
                     return
                 }
 
-                let documents =
-                    snapshot?.documents ?? []
+                let documents = snapshot?.documents ?? []
 
                 NetworkLogger.logFirebaseResponse(
                     path: path,
@@ -82,16 +80,15 @@ final class ScheduleFirebaseDataSource:
                     }
                 )
 
-                let schedules =
+                onChange(
                     documents.map {
-                        self.mapSchedule(
-                            document: $0
-                        )
+                        self.mapSchedule(document: $0)
                     }
-
-                onChange(schedules)
+                )
             }
     }
+
+    // MARK: - Pending Schedules
 
     func observePendingSchedules(
         branch: String,
@@ -122,13 +119,11 @@ final class ScheduleFirebaseDataSource:
                         path: path,
                         error: error
                     )
-
                     onError(error)
                     return
                 }
 
-                let documents =
-                    snapshot?.documents ?? []
+                let documents = snapshot?.documents ?? []
 
                 NetworkLogger.logFirebaseResponse(
                     path: path,
@@ -137,23 +132,21 @@ final class ScheduleFirebaseDataSource:
                     }
                 )
 
-                let reservations =
+                onChange(
                     documents.map {
-                        self.mapReservation(
-                            document: $0
-                        )
+                        self.mapReservation(document: $0)
                     }
-
-                onChange(reservations)
+                )
             }
     }
+
+    // MARK: - Memberships
 
     func memberships(
         branch: String
     ) async -> [PaqueteMemberShipModel] {
 
-        let path =
-            "membresias/\(branch)/membrecias"
+        let path = "membresias/\(branch)/membrecias"
 
         NetworkLogger.logFirebaseRequest(
             path: path,
@@ -161,12 +154,11 @@ final class ScheduleFirebaseDataSource:
         )
 
         do {
-            let snapshot =
-                try await firestore
-                    .collection("membresias")
-                    .document(branch)
-                    .collection("membrecias")
-                    .getDocuments()
+            let snapshot = try await firestore
+                .collection("membresias")
+                .document(branch)
+                .collection("membrecias")
+                .getDocuments()
 
             NetworkLogger.logFirebaseResponse(
                 path: path,
@@ -176,16 +168,13 @@ final class ScheduleFirebaseDataSource:
             )
 
             return snapshot.documents.map {
-                mapMembership(
-                    document: $0
-                )
+                mapMembership(document: $0)
             }
         } catch {
             NetworkLogger.logFirebaseError(
                 path: path,
                 error: error
             )
-
             return []
         }
     }
@@ -198,55 +187,51 @@ final class ScheduleFirebaseDataSource:
 
         let data = document.data()
 
+        let includesWeekend = boolValue(
+            data["incluyeFinesDeSemana"]
+        )
+
+        #if DEBUG
+        print(
+            "📦 \(stringValue(data["name"])) → " +
+            "incluyeFinesDeSemana raw: " +
+            "\(String(describing: data["incluyeFinesDeSemana"])) " +
+            "→ \(includesWeekend)"
+        )
+        #endif
+
         return PaqueteMemberShipModel(
-            idPaquete:
-                stringValue(
-                    data["idPaquete"]
-                )
-                .ifEmpty(
-                    document.documentID
-                ),
-
-            name:
-                stringValue(
-                    data["name"]
-                ),
-
-            descripcion:
-                stringValue(
-                    data["descripcion"]
-                ),
-
-            precioRegular:
-                doubleValue(
-                    data["precioRegular"]
-                ),
-
-            precioDescuento:
-                doubleValue(
-                    data["precioDescuento"]
-                ),
-
-            beneficios:
-                stringArrayValue(
-                    data["beneficios"]
-                ),
-
-            tipoPaquete:
-                intValue(
-                    data["tipoPaquete"] ??
-                    data["tipoMmebresia"]
-                ),
-
-            imagePlan:
-                stringValue(
-                    data["imagePlan"]
-                ),
-
-            diasVigencia:
-                intValue(
-                    data["diasVigencia"]
-                )
+            idPaquete: stringValue(
+                data["idPaquete"]
+            ).ifEmpty(
+                document.documentID
+            ),
+            name: stringValue(
+                data["name"]
+            ),
+            descripcion: stringValue(
+                data["descripcion"]
+            ),
+            precioRegular: doubleValue(
+                data["precioRegular"]
+            ),
+            precioDescuento: doubleValue(
+                data["precioDescuento"]
+            ),
+            beneficios: stringArrayValue(
+                data["beneficios"]
+            ),
+            tipoPaquete: intValue(
+                data["tipoPaquete"] ??
+                data["tipoMmebresia"]
+            ),
+            imagePlan: stringValue(
+                data["imagePlan"]
+            ),
+            diasVigencia: intValue(
+                data["diasVigencia"]
+            ),
+            incluyeFinesDeSemana: includesWeekend
         )
     }
 
@@ -260,45 +245,27 @@ final class ScheduleFirebaseDataSource:
 
         return ClassItem(
             id: document.documentID,
-
-            name:
-                data["name"] as? String ?? "",
-
-            coach:
-                data["coach"] as? String ?? "",
-
-            photo:
-                data["photo"] as? String ?? "",
-
-            time:
-                data["time"] as? String ??
+            name: data["name"] as? String ?? "",
+            coach: data["coach"] as? String ?? "",
+            photo: data["photo"] as? String ?? "",
+            time: data["time"] as? String ??
                 document.documentID,
-
-            duration:
-                intValue(
-                    data["duration"]
-                ),
-
-            level:
-                intValue(
-                    data["level"]
-                ),
-
-            agenda:
-                intValue(
-                    data["agenda"]
-                ),
-
-            total:
-                intValue(
-                    data["total"]
-                ),
-
+            duration: intValue(
+                data["duration"]
+            ),
+            level: intValue(
+                data["level"]
+            ),
+            agenda: intValue(
+                data["agenda"]
+            ),
+            total: intValue(
+                data["total"]
+            ),
             cancelled:
                 data["cancelada"] as? Bool ??
                 data["cancelled"] as? Bool ??
                 false,
-
             isScheduled: false
         )
     }
@@ -313,59 +280,38 @@ final class ScheduleFirebaseDataSource:
 
         return ClassItemEntity(
             id: nil,
-
-            idFirebase:
-                document.documentID,
-
+            idFirebase: document.documentID,
             sucursalAgendada:
                 data["sucursalAgendada"] as? String ??
                 data["idSucursal"] as? String ??
                 "",
-
             diaAgendado:
                 data["diaAgendado"] as? String ??
                 data["dia"] as? String ??
                 "",
-
-            coach:
-                data["coach"] as? String ?? "",
-
-            name:
-                data["name"] as? String ?? "",
-
+            coach: data["coach"] as? String ?? "",
+            name: data["name"] as? String ?? "",
             time:
                 data["time"] as? String ??
                 data["horario"] as? String ??
                 "",
-
-            duration:
-                intValue(
-                    data["duration"]
-                ),
-
-            level:
-                intValue(
-                    data["level"]
-                ),
-
-            agenda:
-                intValue(
-                    data["agenda"]
-                ),
-
-            total:
-                intValue(
-                    data["total"]
-                ),
-
-            photo:
-                data["photo"] as? String ?? "",
-
+            duration: intValue(
+                data["duration"]
+            ),
+            level: intValue(
+                data["level"]
+            ),
+            agenda: intValue(
+                data["agenda"]
+            ),
+            total: intValue(
+                data["total"]
+            ),
+            photo: data["photo"] as? String ?? "",
             cancelled:
                 data["cancelada"] as? Bool ??
                 data["cancelled"] as? Bool ??
                 false,
-
             isScheduled: true
         )
     }
@@ -376,11 +322,8 @@ final class ScheduleFirebaseDataSource:
         _ document: QueryDocumentSnapshot
     ) -> [String: Any] {
 
-        var data =
-            document.data()
-
-        data["_documentId"] =
-            document.documentID
+        var data = document.data()
+        data["_documentId"] = document.documentID
 
         return data
     }
@@ -452,6 +395,44 @@ final class ScheduleFirebaseDataSource:
         return 0
     }
 
+    private func boolValue(
+        _ value: Any?
+    ) -> Bool {
+
+        if let value = value as? Bool {
+            return value
+        }
+
+        if let value = value as? NSNumber {
+            return value.intValue != 0
+        }
+
+        if let value = value as? Int {
+            return value != 0
+        }
+
+        if let value = value as? Int64 {
+            return value != 0
+        }
+
+        if let value = value as? String {
+            switch value
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                )
+                .lowercased() {
+
+            case "1", "true", "si", "sí", "yes":
+                return true
+
+            default:
+                return false
+            }
+        }
+
+        return false
+    }
+
     private func stringArrayValue(
         _ value: Any?
     ) -> [String] {
@@ -477,8 +458,6 @@ private extension String {
     func ifEmpty(
         _ fallback: String
     ) -> String {
-        isEmpty
-            ? fallback
-            : self
+        isEmpty ? fallback : self
     }
 }

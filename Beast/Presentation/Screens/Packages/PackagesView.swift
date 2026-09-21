@@ -1,41 +1,27 @@
 import SwiftUI
 
 struct PackagesView: View {
+    @ObservedObject var viewModel: PackagesViewModel
 
-    @ObservedObject
-    var viewModel: PackagesViewModel
+    let onDetailRequested: (PaqueteMemberShipModel) -> Void
+    let onPurchaseRequested: (PaqueteMemberShipModel) -> Void
 
-    private let columns = [
-        GridItem(
-            .flexible(),
-            spacing: 12
-        ),
-        GridItem(
-            .flexible(),
-            spacing: 12
-        )
-    ]
+    init(
+        viewModel: PackagesViewModel,
+        onDetailRequested: @escaping (PaqueteMemberShipModel) -> Void,
+        onPurchaseRequested: @escaping (PaqueteMemberShipModel) -> Void
+    ) {
+        self.viewModel = viewModel
+        self.onDetailRequested = onDetailRequested
+        self.onPurchaseRequested = onPurchaseRequested
+    }
 
     var body: some View {
         ZStack {
-            Color("BeastBackground")
+            BeastColors.background
                 .ignoresSafeArea()
 
-            ScrollView(
-                showsIndicators: false
-            ) {
-                VStack(
-                    alignment: .leading,
-                    spacing: 18
-                ) {
-                    header
-
-                    content
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 120)
-            }
-
+            mainContent
             overlays
         }
         .task {
@@ -44,33 +30,12 @@ struct PackagesView: View {
         .refreshable {
             await viewModel.refresh()
         }
-        .fullScreenCover(
-            isPresented:
-                $viewModel.showPurchaseConfirmation
-        ) {
-            purchaseConfirmation
-        }
-    }
-
-    // MARK: - Header
-
-    private var header: some View {
-        Text("Suscripciones y paquetes")
-            .font(
-                .system(
-                    size: 26,
-                    weight: .black
-                )
-            )
-            .italic()
-            .foregroundStyle(.primary)
-            .padding(.top, 8)
     }
 
     // MARK: - Content
 
     @ViewBuilder
-    private var content: some View {
+    private var mainContent: some View {
         if viewModel.shouldShowEmptyState {
             emptyState
         } else {
@@ -78,48 +43,112 @@ struct PackagesView: View {
         }
     }
 
-    // MARK: - Packages
-
-    @ViewBuilder
     private var packagesContent: some View {
-        if let package =
-            viewModel.featuredPackage {
-            FeaturedMembershipCard(
-                package: package,
-                isActive:
-                    viewModel.isActive(
-                        package
-                    ),
-                buttonTitle:
-                    viewModel.actionTitle(
-                        for: package
-                    ),
-                canBuy:
-                    viewModel.canBuy(
-                        package
-                    )
+        ScrollView(showsIndicators: false) {
+            LazyVStack(
+                alignment: .leading,
+                spacing: 22
             ) {
-                viewModel.selectPackage(
-                    package
-                )
-            }
-        }
+                header
 
-        if !viewModel.otherPackages.isEmpty {
-            Text("Otras opciones")
+                if let featured =
+                    viewModel.featuredPackage {
+                    featuredCard(
+                        featured
+                    )
+                }
+
+                if !viewModel.otherPackages.isEmpty {
+                    otherPackagesSection
+                }
+            }
+            .padding(.horizontal, 18)
+            .padding(.top, 16)
+            .padding(.bottom, 32)
+        }
+    }
+
+    // MARK: - Header
+
+    private var header: some View {
+        VStack(
+            alignment: .leading,
+            spacing: 4
+        ) {
+            Text("SUSCRIPCIONES Y PAQUETES")
                 .font(
                     .system(
-                        size: 22,
+                        size: 27,
                         weight: .black
                     )
                 )
-                .foregroundStyle(.primary)
-                .padding(.top, 2)
+                .italic()
+
+            Text(
+                "Encuentra el plan que mejor se adapte a tu entrenamiento."
+            )
+            .font(
+                .system(
+                    size: 12,
+                    weight: .medium
+                )
+            )
+            .foregroundStyle(.secondary)
+        }
+        .frame(
+            maxWidth: .infinity,
+            alignment: .leading
+        )
+    }
+
+    // MARK: - Featured
+
+    private func featuredCard(
+        _ package: PaqueteMemberShipModel
+    ) -> some View {
+        FeaturedMembershipCard(
+            package: package,
+            isActive:
+                viewModel.isActive(package),
+            buttonTitle:
+                viewModel.actionTitle(
+                    for: package
+                ),
+            canBuy:
+                viewModel.canBuy(package)
+        ) {
+            requestPurchase(package)
+        }
+    }
+
+    // MARK: - Other Packages
+
+    private var otherPackagesSection: some View {
+        VStack(
+            alignment: .leading,
+            spacing: 13
+        ) {
+            Text("MÁS OPCIONES")
+                .font(
+                    .system(
+                        size: 13,
+                        weight: .black
+                    )
+                )
+                .tracking(1)
 
             LazyVGrid(
-                columns: columns,
-                alignment: .center,
-                spacing: 14
+                columns: [
+                    GridItem(
+                        .flexible(),
+                        spacing: 12
+                    ),
+                    GridItem(
+                        .flexible(),
+                        spacing: 12
+                    )
+                ],
+                spacing: 12
             ) {
                 ForEach(
                     viewModel.otherPackages
@@ -137,101 +166,79 @@ struct PackagesView: View {
                         canBuy:
                             viewModel.canBuy(
                                 package
+                            ),
+                        onDetail: {
+                            onDetailRequested(
+                                package
                             )
-                    ) {
-                        viewModel.selectPackage(
-                            package
-                        )
-                    }
+                        },
+                        onBuy: {
+                            requestPurchase(
+                                package
+                            )
+                        }
+                    )
                 }
             }
         }
     }
 
-    // MARK: - Empty State
+    // MARK: - Empty
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
-            Spacer()
-                .frame(height: 40)
-
-            ZStack {
-                Circle()
-                    .fill(
-                        Color("BeastTabSelected")
-                            .opacity(0.12)
-                    )
-                    .frame(
-                        width: 76,
-                        height: 76
-                    )
-
-                Image(
-                    systemName:
-                        "rectangle.stack.badge.plus"
-                )
-                .font(
-                    .system(
-                        size: 28,
-                        weight: .bold
-                    )
-                )
-                .foregroundStyle(
-                    Color("BeastTabSelected")
-                )
-            }
-
-            Text("No hay paquetes disponibles")
-                .font(
-                    .system(
-                        size: 18,
-                        weight: .bold
-                    )
-                )
-                .foregroundStyle(.primary)
-
-            Text(
-                "No encontramos suscripciones o paquetes disponibles para tu studio."
+        VStack(spacing: 14) {
+            Image(
+                systemName: "rectangle.stack"
             )
             .font(
                 .system(
-                    size: 14,
+                    size: 40,
+                    weight: .medium
+                )
+            )
+            .foregroundStyle(.secondary)
+
+            Text(
+                "NO HAY PAQUETES DISPONIBLES"
+            )
+            .font(
+                .system(
+                    size: 16,
+                    weight: .black
+                )
+            )
+            .italic()
+            .multilineTextAlignment(.center)
+
+            Text(
+                "Cuando existan paquetes disponibles para tu sucursal aparecerán aquí."
+            )
+            .font(
+                .system(
+                    size: 12,
                     weight: .medium
                 )
             )
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)
-            .lineSpacing(3)
-
-            Button {
-                Task {
-                    await viewModel.refresh()
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(
-                        systemName:
-                            "arrow.clockwise"
-                    )
-
-                    Text("VOLVER A INTENTAR")
-                }
-                .font(
-                    .system(
-                        size: 12,
-                        weight: .black
-                    )
-                )
-                .foregroundStyle(
-                    Color("BeastTabSelected")
-                )
-            }
-            .buttonStyle(.plain)
-            .padding(.top, 4)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 32)
+        .padding(.horizontal, 35)
+        .frame(
+            maxWidth: .infinity,
+            maxHeight: .infinity
+        )
+    }
+
+    // MARK: - Actions
+
+    private func requestPurchase(
+        _ package: PaqueteMemberShipModel
+    ) {
+        guard viewModel.canBuy(package) else {
+            return
+        }
+
+        onPurchaseRequested(package)
     }
 
     // MARK: - Overlays
@@ -258,30 +265,4 @@ struct PackagesView: View {
             .zIndex(200)
         }
     }
-
-    // MARK: - Purchase
-
-    @ViewBuilder
-    private var purchaseConfirmation: some View {
-        if let package =
-            viewModel.selectedPackage {
-            PurchaseConfirmationView(
-                package: package,
-                userName:
-                    viewModel.userName,
-                phone:
-                    viewModel.profile?.phone ?? "",
-                onDismiss: {
-                    viewModel
-                        .dismissPurchaseConfirmation()
-                }
-            )
-        }
-    }
-}
-
-#Preview {
-    PackagesView(
-        viewModel: PackagesViewModel()
-    )
 }

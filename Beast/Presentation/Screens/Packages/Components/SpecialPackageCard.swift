@@ -1,97 +1,32 @@
 import SwiftUI
 
 struct SpecialPackageCard: View {
-
     let package: PaqueteMemberShipModel
     let isActive: Bool
     let buttonTitle: String
     let canBuy: Bool
-    let onAction: () -> Void
+    let onDetail: () -> Void
+    let onBuy: () -> Void
 
-    private var imageURL: URL? {
-        let value = package.imagePlan
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard !value.isEmpty else {
-            return nil
-        }
-
-        return URL(string: value)
-    }
+    private let imageHeight: CGFloat = 130
+    private let contentHeight: CGFloat = 150
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            imageSection
-
-            VStack(alignment: .leading, spacing: 10) {
-                if isActive {
-                    activeBadge
+        VStack(spacing: 0) {
+            Button(action: onDetail) {
+                VStack(spacing: 0) {
+                    imageSection
+                    content
                 }
-
-                Text(package.name.uppercased())
-                    .font(.system(size: 17, weight: .black))
-                    .italic()
-                    .foregroundStyle(.primary)
-                    .lineLimit(2)
-                    .fixedSize(
-                        horizontal: false,
-                        vertical: true
-                    )
-
-                if !package.descripcion.isEmpty {
-                    Text(package.descripcion)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(3)
-                        .fixedSize(
-                            horizontal: false,
-                            vertical: true
-                        )
-                }
-
-                validityRow
-
-                priceRow
-
-                if !package.beneficios.isEmpty {
-                    VStack(
-                        alignment: .leading,
-                        spacing: 6
-                    ) {
-                        ForEach(
-                            Array(
-                                package.beneficios
-                                    .prefix(2)
-                                    .enumerated()
-                            ),
-                            id: \.offset
-                        ) { _, benefit in
-                            benefitRow(benefit)
-                        }
-                    }
-                }
-
-                Spacer(minLength: 4)
-
-                Button(action: onAction) {
-                    Text(buttonTitle)
-                        .font(.system(size: 12, weight: .black))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(
-                            Color("BeastTabSelected")
-                        )
-                        .clipShape(Capsule())
-                }
-                .disabled(!canBuy)
-                .opacity(canBuy ? 1 : 0.65)
+                .contentShape(Rectangle())
             }
-            .padding(14)
+            .buttonStyle(.plain)
+
+            buyButton
+                .padding(.horizontal, 14)
+                .padding(.bottom, 14)
         }
-        .background(
-            Color("BeastBackground")
-        )
+        .background(Color(.systemBackground))
         .clipShape(
             RoundedRectangle(
                 cornerRadius: 22,
@@ -104,50 +39,201 @@ struct SpecialPackageCard: View {
                 style: .continuous
             )
             .stroke(
-                Color.primary.opacity(0.08),
+                Color.primary.opacity(0.07),
                 lineWidth: 1
             )
         }
+        .shadow(
+            color: .black.opacity(0.06),
+            radius: 10,
+            y: 4
+        )
     }
+
+    // MARK: - Image
 
     private var imageSection: some View {
         ZStack(alignment: .topTrailing) {
-            remoteImage
-                .frame(height: 135)
+            packageImage
                 .frame(maxWidth: .infinity)
+                .frame(height: imageHeight)
                 .clipped()
 
             if isActive {
-                Image(systemName: "star.fill")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(9)
+                Text("ACTIVO")
+                    .font(
+                        .system(
+                            size: 8,
+                            weight: .black
+                        )
+                    )
+                    .tracking(0.6)
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 6)
                     .background(
                         Color("BeastTabSelected")
                     )
-                    .clipShape(Circle())
-                    .padding(10)
+                    .clipShape(Capsule())
+                    .padding(9)
             }
+        }
+        .frame(height: imageHeight)
+    }
+
+    @ViewBuilder
+    private var packageImage: some View {
+        if let imageURL {
+            AsyncImage(
+                url: imageURL
+            ) { phase in
+                switch phase {
+                case .empty:
+                    defaultImage
+                        .overlay {
+                            ProgressView()
+                                .tint(.white)
+                        }
+
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(
+                            maxWidth: .infinity
+                        )
+                        .frame(
+                            height: imageHeight
+                        )
+                        .clipped()
+
+                case .failure:
+                    defaultImage
+
+                @unknown default:
+                    defaultImage
+                }
+            }
+        } else {
+            defaultImage
         }
     }
 
-    private var validityRow: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "calendar")
+    private var defaultImage: some View {
+        Image("default_image_plan")
+            .resizable()
+            .scaledToFill()
+            .frame(maxWidth: .infinity)
+            .frame(height: imageHeight)
+            .clipped()
+    }
+
+    // MARK: - Content
+
+    private var content: some View {
+        VStack(
+            alignment: .leading,
+            spacing: 0
+        ) {
+            Text(package.name)
                 .font(
                     .system(
-                        size: 12,
-                        weight: .semibold
+                        size: 16,
+                        weight: .black
                     )
                 )
+                .italic()
+                .foregroundStyle(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
+                .allowsTightening(true)
+                .frame(
+                    maxWidth: .infinity,
+                    alignment: .leading
+                )
+
+            if !package.descripcion.isEmpty {
+                Text(package.descripcion)
+                    .font(
+                        .system(
+                            size: 10,
+                            weight: .medium
+                        )
+                    )
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .frame(
+                        maxWidth: .infinity,
+                        alignment: .leading
+                    )
+                    .padding(.top, 5)
+            }
+
+            Spacer(minLength: 7)
+
+            weekendText
+
+            validityRow
+                .padding(.top, 5)
+
+            Spacer(minLength: 6)
+
+            priceRow
+        }
+        .frame(
+            maxWidth: .infinity,
+            alignment: .leading
+        )
+        .frame(height: contentHeight)
+        .padding(.horizontal, 14)
+        .padding(.top, 13)
+        .padding(.bottom, 10)
+    }
+
+    // MARK: - Weekend
+
+    private var weekendText: some View {
+        Text(
+            package.incluyeFinesDeSemana
+                ? "SI incluye fines de semana"
+                : "NO incluye fines de semana"
+        )
+        .font(
+            .system(
+                size: 8.5,
+                weight: .bold
+            )
+        )
+        .foregroundStyle(
+            package.incluyeFinesDeSemana
+                ? Color.green
+                : Color.red
+        )
+        .lineLimit(1)
+        .minimumScaleFactor(0.65)
+    }
+
+    // MARK: - Validity
+
+    private var validityRow: some View {
+        HStack(spacing: 5) {
+            Image(
+                systemName: "calendar"
+            )
+            .font(
+                .system(
+                    size: 9,
+                    weight: .semibold
+                )
+            )
 
             Text(
                 "Vigencia: \(package.diasVigencia) días"
             )
             .font(
                 .system(
-                    size: 12,
-                    weight: .semibold
+                    size: 9,
+                    weight: .bold
                 )
             )
             .lineLimit(1)
@@ -155,6 +241,8 @@ struct SpecialPackageCard: View {
         }
         .foregroundStyle(.secondary)
     }
+
+    // MARK: - Price
 
     private var priceRow: some View {
         HStack(
@@ -164,112 +252,118 @@ struct SpecialPackageCard: View {
             Text(priceText)
                 .font(
                     .system(
-                        size: 22,
+                        size: 23,
                         weight: .black
                     )
                 )
                 .foregroundStyle(.primary)
+                .lineLimit(1)
 
-            Text("/ mes")
-                .font(
-                    .system(
-                        size: 11,
-                        weight: .bold
-                    )
-                )
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private var activeBadge: some View {
-        HStack(spacing: 5) {
-            Image(systemName: "star.fill")
+            Text("MXN")
                 .font(
                     .system(
                         size: 8,
-                        weight: .bold
-                    )
-                )
-
-            Text("PAQUETE ACTIVO")
-                .font(
-                    .system(
-                        size: 9,
                         weight: .black
                     )
                 )
-        }
-        .foregroundStyle(
-            Color("BeastTabSelected")
-        )
-    }
+                .foregroundStyle(.secondary)
 
-    @ViewBuilder
-    private var remoteImage: some View {
-        if let imageURL {
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .empty:
-                    fallbackImage
+            Spacer()
 
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-
-                case .failure:
-                    fallbackImage
-
-                @unknown default:
-                    fallbackImage
-                }
-            }
-        } else {
-            fallbackImage
-        }
-    }
-
-    private var fallbackImage: some View {
-        Image("default_image_plan")
-            .resizable()
-            .scaledToFill()
-    }
-
-    private func benefitRow(
-        _ text: String
-    ) -> some View {
-        HStack(
-            alignment: .top,
-            spacing: 6
-        ) {
             Image(
-                systemName: "checkmark.circle.fill"
+                systemName: "chevron.right"
             )
             .font(
                 .system(
-                    size: 12,
+                    size: 10,
                     weight: .bold
                 )
             )
-            .foregroundStyle(.green)
-
-            Text(text)
-                .font(
-                    .system(
-                        size: 11,
-                        weight: .medium
-                    )
-                )
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
+            .foregroundStyle(
+                .secondary.opacity(0.6)
+            )
         }
+    }
+
+    // MARK: - Button
+
+    private var buyButton: some View {
+        Button {
+            guard canBuy else {
+                return
+            }
+
+            onBuy()
+        } label: {
+            HStack(spacing: 5) {
+                Text(buttonTitle)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+
+                if canBuy {
+                    Image(
+                        systemName: "arrow.right"
+                    )
+                } else {
+                    Image(
+                        systemName: "checkmark"
+                    )
+                }
+            }
+            .font(
+                .system(
+                    size: 9,
+                    weight: .black
+                )
+            )
+            .foregroundStyle(
+                canBuy
+                    ? Color.white
+                    : Color.secondary
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: 42)
+            .background(
+                canBuy
+                    ? Color("BeastTabSelected")
+                    : Color.secondary.opacity(0.12)
+            )
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(!canBuy)
+    }
+
+    // MARK: - Helpers
+
+    private var imageURL: URL? {
+        let value =
+            package.imagePlan
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                )
+
+        guard
+            !value.isEmpty,
+            let url = URL(
+                string: value
+            ),
+            let scheme =
+                url.scheme?.lowercased(),
+            scheme == "https" ||
+                scheme == "http"
+        else {
+            return nil
+        }
+
+        return url
     }
 
     private var priceText: String {
         let price =
             package.precioDescuento > 0
-            ? package.precioDescuento
-            : package.precioRegular
+                ? package.precioDescuento
+                : package.precioRegular
 
         return "$\(Int(price))"
     }

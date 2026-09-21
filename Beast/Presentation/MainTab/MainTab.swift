@@ -13,7 +13,7 @@ enum MainTab: Hashable, CaseIterable {
         case .schedule:
             return "calendar"
         case .packages:
-            return "flame.fill"
+            return "cart.fill"
         case .profile:
             return "person.fill"
         }

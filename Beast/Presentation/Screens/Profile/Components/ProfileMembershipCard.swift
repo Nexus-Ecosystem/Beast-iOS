@@ -12,348 +12,190 @@ struct ProfileMembershipCard: View {
         }
     }
 
+    // MARK: - Active Membership
+
     private var activeMembership: some View {
-        VStack(
-            spacing: 18
-        ) {
-            HStack(
-                alignment: .top,
-                spacing: 12
-            ) {
-                VStack(
-                    alignment: .leading,
-                    spacing: 5
-                ) {
-                    Text(
-                        "Paquete o Membresía"
-                    )
-                    .font(
-                        .system(
-                            size: 9,
-                            weight: .bold
-                        )
-                    )
-                    .foregroundStyle(
-                        BeastColors.primary
-                    )
+        VStack(spacing: 0) {
+            membershipHeader
 
-                    Text(
-                        profile.packageDisplayName
-                    )
-                    .font(
-                        .system(
-                            size: 18,
-                            weight: .black
-                        )
-                    )
-                    .lineLimit(2)
-                }
-                .frame(
-                    maxWidth: .infinity,
-                    alignment: .leading
-                )
+            Spacer()
+                .frame(height: 24)
 
-                VStack(
-                    alignment: .trailing,
-                    spacing: 5
-                ) {
-                    Text("Expiración")
-                        .font(
-                            .system(
-                                size: 9,
-                                weight: .bold
-                            )
-                        )
-                        .foregroundStyle(
-                            .secondary
-                        )
+            membershipProgress
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
 
-                    Text(
-                        profile.packageExpiration
-                    )
-                    .font(
-                        .system(
-                            size: 12,
-                            weight: .bold
-                        )
-                    )
-                    .multilineTextAlignment(
-                        .trailing
-                    )
+    // MARK: - Header
 
-                    Text(
-                        profile.classesDescription
-                    )
-                    .font(
-                        .system(
-                            size: 12,
-                            weight: .bold
-                        )
-                    )
-                    .foregroundStyle(
-                        BeastColors.primary
-                    )
-                }
-            }
-
-            VStack(
-                spacing: 7
-            ) {
-                HStack {
-                    Text(
-                        profile.isMonthlyPackage
-                        ? "Uso de Membresía Mensual"
-                        : "Progreso de Clases"
-                    )
-
-                    Spacer()
-
-                    Text(
-                        "\(Int(progress * 100))%"
-                    )
-                    .foregroundStyle(
-                        BeastColors.primary
-                    )
-                }
-                .font(
-                    .system(
-                        size: 9,
-                        weight: .bold
-                    )
-                )
-                .foregroundStyle(
-                    .secondary
-                )
-
-                GeometryReader { proxy in
-                    ZStack(
-                        alignment: .leading
-                    ) {
-                        Capsule()
-                            .fill(
-                                Color(
-                                    red: 0.15,
-                                    green: 0.17,
-                                    blue: 0.20
-                                )
-                            )
-
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(
-                                            red: 0.83,
-                                            green: 1.0,
-                                            blue: 0.0
-                                        ),
-                                        Color(
-                                            red: 0.0,
-                                            green: 1.0,
-                                            blue: 0.90
-                                        )
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .frame(
-                                width:
-                                    proxy.size.width *
-                                    progress
-                            )
-                    }
-                }
-                .frame(height: 7)
-            }
-
+    private var membershipHeader: some View {
+        VStack(spacing: 4) {
             HStack {
-                Text(
-                    "Clases extras:"
-                )
-                .font(
-                    .system(
-                        size: 13,
-                        weight: .bold
-                    )
-                )
-                .foregroundStyle(
-                    .secondary
-                )
+                Text("Paquete o Membresía")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(BeastColors.primary)
 
                 Spacer()
 
-                Text(
-                    "\(profile.extraCredits)"
-                )
-                .font(
-                    .system(
-                        size: 13,
-                        weight: .bold
+                Text("Expiración")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(BeastColors.textSecondary)
+            }
+
+            HStack(alignment: .top, spacing: 12) {
+                Text(profile.packageDisplayName)
+                    .font(.system(size: 20, weight: .black))
+                    .foregroundStyle(BeastColors.textPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(
+                        maxWidth: .infinity,
+                        alignment: .leading
                     )
-                )
-                .foregroundStyle(
-                    BeastColors.primary
-                )
+
+                Text(profile.packageExpiration)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(BeastColors.textPrimary)
+                    .multilineTextAlignment(.trailing)
+                    .frame(
+                        maxWidth: 110,
+                        alignment: .trailing
+                    )
             }
         }
-        .padding(20)
-        .frame(
-            maxWidth: .infinity
-        )
-        .background(
-            RoundedRectangle(
-                cornerRadius: 24,
-                style: .continuous
-            )
-            .fill(
-                Color(
-                    .secondarySystemBackground
-                )
-            )
-        )
     }
 
-    private var emptyMembership: some View {
-        VStack(
-            spacing: 13
-        ) {
-            Image(
-                systemName: "plus.circle"
-            )
-            .font(
-                .system(
-                    size: 30
-                )
-            )
-            .foregroundStyle(
-                BeastColors.primary
-            )
+    // MARK: - Progress
 
-            Text(
-                "SIN SUSCRIPCIÓN ACTIVA"
-            )
-            .font(
-                .system(
-                    size: 11,
-                    weight: .black
-                )
-            )
+    private var membershipProgress: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text(progressTitle)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(BeastColors.textSecondary)
 
-            Button(
-                action: onPurchase
-            ) {
-                Text(
-                    "ADQUIRIR PAQUETE"
-                )
-                .font(
-                    .system(
-                        size: 10,
-                        weight: .bold
-                    )
-                )
-                .foregroundStyle(
-                    Color(
-                        "BeastBackground"
-                    )
-                )
-                .padding(
-                    .horizontal,
-                    20
-                )
-                .frame(height: 38)
-                .background(
+                Spacer()
+
+                Text(progressDescription)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(BeastColors.primary)
+            }
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
                     Capsule()
                         .fill(
-                            BeastColors.primary
+                            Color(
+                                red: 0.15,
+                                green: 0.17,
+                                blue: 0.20
+                            )
                         )
-                )
+
+                    Capsule()
+                        .fill(progressGradient)
+                        .frame(
+                            width: proxy.size.width * progress
+                        )
+                }
+            }
+            .frame(height: 8)
+        }
+    }
+
+    // MARK: - Empty Membership
+
+    private var emptyMembership: some View {
+        VStack(spacing: 13) {
+            Image(systemName: "plus.circle")
+                .font(.system(size: 30))
+                .foregroundStyle(BeastColors.primary)
+
+            Text("SIN SUSCRIPCIÓN ACTIVA")
+                .font(.system(size: 11, weight: .black))
+                .foregroundStyle(BeastColors.textPrimary)
+
+            Button(action: onPurchase) {
+                Text("ADQUIRIR PAQUETE")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Color("BeastBackground"))
+                    .padding(.horizontal, 20)
+                    .frame(height: 38)
+                    .background(
+                        Capsule()
+                            .fill(BeastColors.primary)
+                    )
             }
             .buttonStyle(.plain)
         }
-        .frame(
-            maxWidth: .infinity
-        )
+        .frame(maxWidth: .infinity)
         .padding(22)
         .background(
-            RoundedRectangle(
-                cornerRadius: 24,
-                style: .continuous
-            )
-            .fill(
-                Color(
-                    .secondarySystemBackground
-                )
-            )
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
         )
     }
+
+    // MARK: - Progress Logic
 
     private var progress: Double {
-        if profile.isMonthlyPackage {
-            return monthlyProgress
-        }
-
-        return profile.classProgress
-    }
-
-    private var monthlyProgress: Double {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(
-            identifier: "en_US_POSIX"
-        )
-        formatter.dateFormat = "yyyy-MM-dd"
-
-        guard
-            let expirationDate =
-                formatter.date(
-                    from:
-                        String(
-                            profile.packageExpiration
-                                .prefix(10)
-                        )
-                )
-        else {
-            return 0
-        }
-
-        let calendar = Calendar.current
-
-        let today = calendar.startOfDay(
-            for: Date()
-        )
-
-        let expiration =
-            calendar.startOfDay(
-                for: expirationDate
-            )
-
-        guard
-            let daysRemaining =
-                calendar.dateComponents(
-                    [.day],
-                    from: today,
-                    to: expiration
-                ).day
-        else {
-            return 0
-        }
-
-        if daysRemaining <= 0 {
-            return 1
-        }
-
-        let totalDays = 30.0
-
-        return min(
-            max(
-                (
-                    totalDays -
-                    Double(daysRemaining)
-                ) /
-                totalDays,
-                0
-            ),
+        min(
+            max(profile.classProgress, 0),
             1
         )
+    }
+
+    private var progressTitle: String {
+        profile.isMonthlyPackage
+            ? "Uso de Membresía Mensual"
+            : "Progreso de Clases"
+    }
+
+    private var progressDescription: String {
+        "\(formattedClassesDescription) \(Int(progress * 100))%"
+    }
+
+    private var formattedClassesDescription: String {
+        let value = profile.classesDescription
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !value.isEmpty else {
+            return ""
+        }
+
+        if value.hasPrefix("(") && value.hasSuffix(")") {
+            return value
+        }
+
+        return "(\(value))"
+    }
+
+    // MARK: - Progress Style
+
+    private var progressGradient: LinearGradient {
+        LinearGradient(
+            colors: progressColors,
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
+
+    private var progressColors: [Color] {
+        if progress >= 1 && profile.isMonthlyPackage {
+            return [
+                .red,
+                Color(red: 0.55, green: 0, blue: 0)
+            ]
+        }
+
+        return [
+            Color(red: 0.83, green: 1.0, blue: 0.0),
+            Color(red: 0.0, green: 1.0, blue: 0.90)
+        ]
     }
 }
